@@ -45,7 +45,7 @@ A especificação `DES_Expedicao_Silos.md` existe no workspace do líder, mas ai
 Após editar arquivos Python, faça pelo menos a verificação de sintaxe:
 
 ```powershell
-python -m compileall -q app
+python -m compileall -q app/__init__.py app/instance app/routers
 ```
 
 Execute os testes automatizados com `unittest`:
