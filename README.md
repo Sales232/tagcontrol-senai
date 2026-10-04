@@ -32,11 +32,11 @@ python -m pip list
 git status --short --branch
 ```
 
-Use sempre o ambiente `.venv` deste projeto. Não versione a pasta `.venv`, arquivos de banco de dados locais, caches ou credenciais.
+Use sempre o ambiente `.venv` deste projeto. Não versione a pasta `.venv`, arquivos `.env`/`.flaskenv`, bancos de dados locais, caches ou credenciais.
 
 ## 3. Entender o estado atual
 
-O repositório está no início da implementação: há dependências Flask/SQLAlchemy e um módulo de modelos em `app/instance/models.py`, mas ainda não há inicialização da aplicação, rotas, comando para iniciar o servidor ou suíte de testes. Portanto, `flask run` e testes funcionais ainda não estão disponíveis.
+A aplicação usa uma fábrica Flask em `app/__init__.py`, SQLAlchemy e Flask-Migrate. Há rotas e telas para peças, conjuntos e pedidos, além de testes iniciais para a inicialização da aplicação e os modelos principais.
 
 A especificação `DES_Expedicao_Silos.md` existe no workspace do líder, mas ainda não está versionada no GitHub. Peça acesso a ela ou confirme com o líder que foi publicada antes de começar uma tarefa que dependa dos requisitos.
 
@@ -48,15 +48,35 @@ Após editar arquivos Python, faça pelo menos a verificação de sintaxe:
 python -m compileall -q app
 ```
 
-Ainda não há testes automatizados no repositório. Quando forem adicionados testes com `unittest`, execute:
+Execute os testes automatizados com `unittest`:
 
 ```powershell
 python -m unittest discover -v
 ```
 
-Até existir uma aplicação inicializável e testes, a compilação verifica apenas sintaxe; ela não confirma o comportamento do sistema. Ao concluir uma tarefa, revise também o diff e valide manualmente o fluxo alterado assim que houver uma forma de executá-lo.
+A compilação verifica sintaxe, enquanto os testes cobrem apenas os casos implementados. Ao concluir uma tarefa, revise também o diff e valide manualmente o fluxo alterado.
 
-## 5. Fluxo de trabalho com Git
+## 5. Flask-Migrate
+
+Este projeto agora usa uma fábrica de aplicação para inicializar o SQLAlchemy e o Flask-Migrate. Com a app configurada, execute:
+
+```powershell
+flask db init
+flask db migrate -m "Initial schema"
+flask db upgrade
+```
+
+Se o comando `flask` não estiver disponível no terminal, use:
+
+```powershell
+python -m flask db init
+python -m flask db migrate -m "Initial schema"
+python -m flask db upgrade
+```
+
+A pasta `migrations/` deve ser criada na raiz do projeto e guardar o histórico das mudanças de schema.
+
+## 6. Fluxo de trabalho com Git
 
 Antes de começar e antes de enviar suas alterações, confira o estado e atualize sua branch a partir da principal:
 
@@ -87,6 +107,5 @@ git push -u origin feat/descricao-da-tarefa
 
 Abra um Pull Request no GitHub da branch da tarefa para `main`, descreva o que mudou e quais verificações executou. Aguarde a revisão antes de integrar. Se o Git solicitar autenticação, use a autenticação do GitHub/VS Code ou SSH configurado; não coloque tokens ou senhas na URL do repositório.
 
-## 6. Combinados para pedir ajuda
-
+## 7. Combinados para pedir ajuda
 Ao sinalizar que terminou ou pedir revisão, informe a tarefa, os arquivos alterados, os comandos de validação executados e qualquer bloqueio. Se uma validação falhar, compartilhe a mensagem de erro completa e não faça push até entender o problema.
