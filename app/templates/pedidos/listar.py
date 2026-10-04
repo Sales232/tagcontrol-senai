@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Pedidos{% endblock %}
+{% block content %}
+<h1>Pedidos cadastrados</h1>
+<a href="{{ url_for('pedidos.novo') }}">+ Novo pedido</a>
+<table>
+    <thead>
+        <tr><th>Código</th><th>Cor da etiqueta</th><th>Itens</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for pedido in pedidos %}
+        <tr>
+            <td>{{ pedido.codigo }}</td>
+            <td>{{ pedido.cor_etiqueta }}</td>
+            <td>{{ pedido.itens|length }}</td>
+            <td>
+                <a href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Ver/gerenciar itens</a>
+                <a href="{{ url_for('pedidos.editar', pedido_id=pedido.id) }}">Editar</a>
+                <form method="post" action="{{ url_for('pedidos.apagar', pedido_id=pedido.id) }}" style="display:inline"
+                      onsubmit="return confirm('Apagar pedido {{ pedido.codigo }} e todos os seus itens?');">
+                    <button type="submit">Apagar</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4">Nenhum pedido cadastrado.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

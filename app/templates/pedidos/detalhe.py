@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Pedido {{ pedido.codigo }}{% endblock %}
+{% block content %}
+<h1>Pedido {{ pedido.codigo }} — etiqueta {{ pedido.cor_etiqueta }}</h1>
+
+<h2>Itens deste pedido</h2>
+<table>
+    <thead>
+        <tr><th>Código</th><th>Descrição</th><th>Qtd. necessária</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for item in pedido.itens %}
+        <tr>
+            <td>{{ item.peca.codigo }}</td>
+            <td>{{ item.peca.descricao }}</td>
+            <td>
+                <form method="post" action="{{ url_for('pedidos.editar_item', pedido_id=pedido.id, item_id=item.id) }}" style="display:inline">
+                    <input type="number" name="quantidade_necessaria" value="{{ item.quantidade_necessaria }}" min="1" style="width:4em">
+                    <button type="submit">Atualizar</button>
+                </form>
+            </td>
+            <td>
+                <form method="post" action="{{ url_for('pedidos.remover_item', pedido_id=pedido.id, item_id=item.id) }}" style="display:inline"
+                      onsubmit="return confirm('Remover esse item do pedido?');">
+                    <button type="submit">Remover</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4">Nenhum item adicionado ainda.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Adicionar item ao pedido</h2>
+{% if pecas_disponiveis %}
+<form method="post" action="{{ url_for('pedidos.adicionar_item', pedido_id=pedido.id) }}">
+    <label>Peça
+        <select name="peca_id" required>
+            {% for peca in pecas_disponiveis %}
+                <option value="{{ peca.id }}">{{ peca.codigo }} — {{ peca.descricao }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Quantidade necessária
+        <input type="number" name="quantidade_necessaria" min="1" value="1" required>
+    </label>
+    <button type="submit">Adicionar</button>
+</form>
+{% else %}
+<p>Todas as peças cadastradas já estão neste pedido (ou não há peças cadastradas ainda).</p>
+{% endif %}
+{% endblock %}

@@ -22,8 +22,10 @@ def create_app():
         from app.instance import models  # noqa: F401
         from app.routers.conjunto import conjuntos_bp
         from app.routers.pecas import pecas_bp
+        from app.routers.pedidos import pedidos_bp
 
         app.register_blueprint(conjuntos_bp)
         app.register_blueprint(pecas_bp)
+        app.register_blueprint(pedidos_bp)
 
     return app
