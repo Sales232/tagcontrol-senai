@@ -1,0 +1,40 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.flaskenv
+.flaskenv.*
+
+# Editor and IDE metadata
+.vscode/
+.idea/
+
+# Local databases and SQLite sidecar files
+*.db
+*.sqlite
+*.sqlite3
+*-journal
+*-wal
+*-shm
+
+# Test, type-checker, and linter artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs and OS metadata
+*.log
+.DS_Store
+Thumbs.db
