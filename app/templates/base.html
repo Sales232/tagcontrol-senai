@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}TagControl{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('pecas.listar') }}">Peças</a> |
+        <a href="{{ url_for('conjuntos.listar') }}">Conjuntos</a> |
+        <a href="{{ url_for('pedidos.listar') }}">Pedidos</a>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>
