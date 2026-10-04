@@ -18,4 +18,10 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    with app.app_context():
+        from app.instance import models  # noqa: F401
+        from app.routers.pecas import pecas_bp
+
+        app.register_blueprint(pecas_bp)
+
     return app
