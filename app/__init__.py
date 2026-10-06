@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -9,8 +11,12 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        raise RuntimeError("A variável de ambiente SECRET_KEY deve estar definida.")
+
     app.config.from_mapping(
-        SECRET_KEY="dev-secret-key",
+        SECRET_KEY=secret_key,
         SQLALCHEMY_DATABASE_URI="sqlite:///tagcontrol.db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )

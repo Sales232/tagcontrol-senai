@@ -34,13 +34,23 @@ git status --short --branch
 
 Use sempre o ambiente `.venv` deste projeto. Não versione a pasta `.venv`, arquivos `.env`/`.flaskenv`, bancos de dados locais, caches ou credenciais.
 
-## 3. Entender o estado atual
+## 3. Configurar a chave secreta
+
+A aplicação exige a variável de ambiente `SECRET_KEY` e não usa uma chave padrão. No PowerShell, gere e defina uma chave para a sessão atual antes de iniciar a aplicação, executar testes ou usar os comandos Flask:
+
+```powershell
+$env:SECRET_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
+```
+
+Em outros ambientes, configure `SECRET_KEY` no mecanismo de variáveis de ambiente do sistema ou da plataforma de deploy. Não compartilhe nem versione o valor.
+
+## 4. Entender o estado atual
 
 A aplicação usa uma fábrica Flask em `app/__init__.py`, SQLAlchemy e Flask-Migrate. Há rotas e telas para peças, conjuntos e pedidos, além de testes iniciais para a inicialização da aplicação e os modelos principais.
 
 A especificação `DES_Expedicao_Silos.md` existe no workspace do líder, mas ainda não está versionada no GitHub. Peça acesso a ela ou confirme com o líder que foi publicada antes de começar uma tarefa que dependa dos requisitos.
 
-## 4. Validar as alterações
+## 5. Validar as alterações
 
 Após editar arquivos Python, faça pelo menos a verificação de sintaxe:
 
@@ -51,12 +61,12 @@ python -m compileall -q app/__init__.py app/instance app/routers
 Execute os testes automatizados com `unittest`:
 
 ```powershell
-python -m unittest discover -v
+python -m unittest discover -s tests -v
 ```
 
 A compilação verifica sintaxe, enquanto os testes cobrem apenas os casos implementados. Ao concluir uma tarefa, revise também o diff e valide manualmente o fluxo alterado.
 
-## 5. Flask-Migrate
+## 6. Flask-Migrate
 
 Este projeto agora usa uma fábrica de aplicação para inicializar o SQLAlchemy e o Flask-Migrate. Com a app configurada, execute:
 
@@ -76,7 +86,7 @@ python -m flask db upgrade
 
 A pasta `migrations/` deve ser criada na raiz do projeto e guardar o histórico das mudanças de schema.
 
-## 6. Fluxo de trabalho com Git
+## 7. Fluxo de trabalho com Git
 
 Antes de começar e antes de enviar suas alterações, confira o estado e atualize sua branch a partir da principal:
 
