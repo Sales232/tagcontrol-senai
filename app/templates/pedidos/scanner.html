@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Scanner — Pedido {{ pedido.codigo }}{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scanner.css') }}">
+{% endblock %}
+{% block content %}
+<main class="scanner-page" data-pedido-id="{{ pedido.id }}">
+    <h1>Scanner — Pedido {{ pedido.codigo }}</h1>
+    <p>Aponte a câmera para um código de barras de produto (EAN/UPC ou Code 128).</p>
+
+    <div class="pedido-progress" aria-live="polite">
+        <strong>Acompanhamento do pedido</strong>
+        <div><span id="pedido-progress-value">{{ progresso.quantidade_validada }} / {{ progresso.total_necessario }} itens</span></div>
+        <div><span id="pedido-progress-percent">({{ progresso.percentual }}%)</span></div>
+        {% if progresso.status == "finalizado" %}
+            <p id="pedido-progress-status" class="pedido-status" data-state="finalizado">Separação finalizada</p>
+        {% elif progresso.status == "sem_itens" %}
+            <p id="pedido-progress-status" class="pedido-status" data-state="sem_itens">Pedido sem itens</p>
+        {% else %}
+            <p id="pedido-progress-status" class="pedido-status" data-state="em_andamento">Separação em andamento</p>
+        {% endif %}
+    </div>
+
+    <label for="camera-select">Câmera</label>
+    <select id="camera-select" aria-label="Selecionar câmera" disabled>
+        <option value="">Câmera padrão (traseira)</option>
+    </select>
+
+    <div id="reader" aria-label="Pré-visualização da câmera"></div>
+
+    <div class="scanner-controls">
+        <button id="start-scanner" type="button">Iniciar câmera</button>
+        <button id="stop-scanner" type="button" hidden>Parar câmera</button>
+        <button id="scan-again" type="button" hidden>Ler outro código</button>
+    </div>
+
+    <p id="scanner-status" role="status" aria-live="polite">
+        A câmera ainda não foi iniciada.
+    </p>
+
+    <section id="scan-result" class="scan-result" aria-live="polite" hidden>
+        <h2>Código capturado</h2>
+        <output id="scanned-code"></output>
+    </section>
+
+    <p><a href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Voltar ao pedido</a></p>
+</main>
+<script src="{{ url_for('static', filename='vendor/html5-qrcode.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scanner.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,117 @@
+.scanner-page {
+    box-sizing: border-box;
+    margin: 0 auto;
+    max-width: 36rem;
+    padding: 1rem;
+}
+
+.scanner-page select,
+.scanner-controls button {
+    box-sizing: border-box;
+    font: inherit;
+    margin: 0.35rem 0;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.scanner-page select {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+}
+
+#reader {
+    margin: 1rem auto;
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+}
+
+#reader video {
+    max-width: 100%;
+}
+
+.pedido-progress {
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    padding: 0.75rem;
+}
+
+.pedido-status {
+    font-weight: 700;
+    margin: 0.5rem 0 0;
+}
+
+.pedido-status[data-state="finalizado"] {
+    color: #166534;
+}
+
+.pedido-status[data-state="em_andamento"] {
+    color: #1d4ed8;
+}
+
+.pedido-status[data-state="sem_itens"] {
+    color: #4b5563;
+}
+
+.scanner-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#scanner-status {
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    min-height: 3rem;
+    padding: 0.75rem;
+}
+
+#scanner-status[data-state="sucesso"] {
+    background: #dcfce7;
+    color: #166534;
+}
+
+#scanner-status[data-state="duplicada"] {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+#scanner-status[data-state="fora_do_pedido"] {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+#scanner-status[data-state="erro"] {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+#scanned-code {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.scan-result[data-state="sucesso"] {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.scan-result[data-state="duplicada"] {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.scan-result[data-state="fora_do_pedido"] {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}

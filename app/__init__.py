@@ -9,7 +9,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
     secret_key = os.environ.get("SECRET_KEY")
     if not secret_key:
@@ -20,9 +20,19 @@ def create_app():
         SQLALCHEMY_DATABASE_URI="sqlite:///tagcontrol.db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+    if config:
+        app.config.update(config)
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    @app.cli.command("seed-demo")
+    def seed_demo_command():
+        """Populate the SQLite database with a reusable mock dataset for demo sessions."""
+        from app.instance.seed import seed_demo_data
+
+        seed_demo_data()
+        print("Dados de demonstração criados com sucesso.")
 
     with app.app_context():
         from app.instance import models  # noqa: F401

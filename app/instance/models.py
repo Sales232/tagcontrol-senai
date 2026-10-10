@@ -65,6 +65,52 @@ class Pedido(db.Model):
     )
     leituras: db.Mapped[list["Leitura"]] = db.relationship(back_populates="pedido")
 
+    def progresso(self) -> dict[str, int | float | str]:
+        total_necessario = sum(item.quantidade_necessaria for item in self.itens)
+        if total_necessario == 0:
+            return {
+                "total_necessario": 0,
+                "quantidade_validada": 0,
+                "percentual": 0.0,
+                "status": "sem_itens",
+            }
+
+        contagem_sucessos: dict[int, int] = {}
+        for leitura in self.leituras:
+            if leitura.status == StatusLeitura.SUCESSO:
+                contagem_sucessos[leitura.peca_id] = contagem_sucessos.get(leitura.peca_id, 0) + 1
+
+        quantidade_validada = 0
+        for item in self.itens:
+            quantidade_validada += min(contagem_sucessos.get(item.peca_id, 0), item.quantidade_necessaria)
+
+        percentual = round((quantidade_validada / total_necessario) * 100, 2)
+        return {
+            "total_necessario": total_necessario,
+            "quantidade_validada": quantidade_validada,
+            "percentual": percentual,
+            "status": "finalizado" if quantidade_validada == total_necessario else "em_andamento",
+        }
+
+    def progresso_por_item(self) -> list[dict[str, object]]:
+        contagem_sucessos: dict[int, int] = {}
+        for leitura in self.leituras:
+            if leitura.status == StatusLeitura.SUCESSO:
+                contagem_sucessos[leitura.peca_id] = contagem_sucessos.get(leitura.peca_id, 0) + 1
+
+        itens = []
+        for item in self.itens:
+            quantidade_validada = min(contagem_sucessos.get(item.peca_id, 0), item.quantidade_necessaria)
+            itens.append(
+                {
+                    "peca": item.peca,
+                    "quantidade_necessaria": item.quantidade_necessaria,
+                    "quantidade_validada": quantidade_validada,
+                    "percentual": round((quantidade_validada / item.quantidade_necessaria) * 100, 2) if item.quantidade_necessaria else 0.0,
+                }
+            )
+        return itens
+
 
 class PedidoItem(db.Model):
     __tablename__ = "pedido_item"
