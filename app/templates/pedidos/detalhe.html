@@ -1,7 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Pedido {{ pedido.codigo }}{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scanner.css') }}">
+{% endblock %}
 {% block content %}
 <h1>Pedido {{ pedido.codigo }}</h1>
+<p><a href="{{ url_for('pedidos.scanner', pedido_id=pedido.id) }}">Abrir scanner de código de barras</a></p>
+
+<div class="pedido-progress" aria-live="polite">
+    <strong>Progresso da separação:</strong>
+    <div><span id="pedido-progress-value">{{ progresso.quantidade_validada }} / {{ progresso.total_necessario }} itens</span></div>
+    <div><span id="pedido-progress-percent">({{ progresso.percentual }}%)</span></div>
+    {% if progresso.status == "finalizado" %}
+        <p id="pedido-progress-status" class="pedido-status" data-state="finalizado">Separação finalizada</p>
+    {% elif progresso.status == "sem_itens" %}
+        <p id="pedido-progress-status" class="pedido-status" data-state="sem_itens">Pedido sem itens</p>
+    {% else %}
+        <p id="pedido-progress-status" class="pedido-status" data-state="em_andamento">Separação em andamento</p>
+    {% endif %}
+</div>
+
+<h2>Acompanhamento por peça</h2>
+<ul>
+    {% for item in progresso_por_item %}
+        <li>
+            {{ item.peca.codigo }} — {{ item.quantidade_validada }} / {{ item.quantidade_necessaria }}
+            ({{ item.percentual }}%)
+        </li>
+    {% else %}
+        <li>Nenhuma peça adicionada ao pedido ainda.</li>
+    {% endfor %}
+</ul>
 
 <h2>Itens deste pedido</h2>
 <table>
