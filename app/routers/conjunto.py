@@ -21,7 +21,10 @@ def novo():
 
         if not codigo or not descricao:
             flash("Código e descrição são obrigatórios.", "error")
-            return render_template("conjuntos/form.html", conjunto=None)
+            return render_template(
+                "conjuntos/form.html",
+                conjunto=Conjunto(codigo=codigo, descricao=descricao),
+            )
 
         conjunto = Conjunto(codigo=codigo, descricao=descricao)
         db.session.add(conjunto)
@@ -31,7 +34,7 @@ def novo():
             return redirect(url_for("conjuntos.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Erro ao adicionar conjunto.", "error")
+            flash("Já existe um conjunto com esse código.", "error")
 
     return render_template("conjuntos/form.html", conjunto=None)
 
@@ -41,16 +44,28 @@ def editar(conjunto_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
 
     if request.method == "POST":
-        conjunto.codigo = request.form.get("codigo", "").strip()
-        conjunto.descricao = request.form.get("descricao", "").strip()
+        codigo = request.form.get("codigo", "").strip()
+        descricao = request.form.get("descricao", "").strip()
+        if not codigo or not descricao:
+            flash("Código e descrição são obrigatórios.", "error")
+            return render_template(
+                "conjuntos/form.html",
+                conjunto=Conjunto(id=conjunto.id, codigo=codigo, descricao=descricao),
+            )
 
+        conjunto.codigo = codigo
+        conjunto.descricao = descricao
         try:
             db.session.commit()
             flash("Conjunto atualizado com sucesso!", "success")
             return redirect(url_for("conjuntos.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Erro ao atualizar conjunto.", "error")
+            flash("Já existe um conjunto com esse código.", "error")
+            return render_template(
+                "conjuntos/form.html",
+                conjunto=Conjunto(id=conjunto_id, codigo=codigo, descricao=descricao),
+            )
 
     return render_template("conjuntos/form.html", conjunto=conjunto)
 
@@ -79,16 +94,21 @@ def detalhe(conjunto_id):
 @conjuntos_bp.route("/<int:conjunto_id>/pecas/adicionar", methods=["POST"], endpoint="adicionar_peca")
 def adicionar_peca(conjunto_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
-    peca_id = request.form.get("peca_id")
-    if not peca_id:
+    try:
+        peca_id = int(request.form.get("peca_id", ""))
+        quantidade = int(request.form.get("quantidade", "1"))
+    except ValueError:
+        flash("Selecione uma peça e informe uma quantidade inteira positiva.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+
+    if quantidade < 1:
+        flash("A quantidade deve ser um número inteiro maior que zero.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+    if peca_id < 1:
         flash("Selecione uma peça válida.", "error")
         return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
 
-    quantidade = int(request.form.get("quantidade", "1") or 1)
-    if quantidade < 1:
-        quantidade = 1
-
-    peca = Peca.query.get_or_404(int(peca_id))
+    peca = Peca.query.get_or_404(peca_id)
     assoc = ConjuntoPeca.query.filter_by(conjunto_id=conjunto.id, peca_id=peca.id).first()
     if assoc:
         assoc.quantidade += quantidade
@@ -108,10 +128,15 @@ def adicionar_peca(conjunto_id):
 @conjuntos_bp.route("/<int:conjunto_id>/pecas/editar/<int:assoc_id>", methods=["POST"], endpoint="editar_peca")
 def editar_peca(conjunto_id, assoc_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
-    assoc = ConjuntoPeca.query.get_or_404(assoc_id)
-    quantidade = int(request.form.get("quantidade", assoc.quantidade) or assoc.quantidade)
+    assoc = ConjuntoPeca.query.filter_by(id=assoc_id, conjunto_id=conjunto.id).first_or_404()
+    try:
+        quantidade = int(request.form.get("quantidade", ""))
+    except ValueError:
+        flash("A quantidade deve ser um número inteiro maior que zero.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
     if quantidade < 1:
-        quantidade = 1
+        flash("A quantidade deve ser um número inteiro maior que zero.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
 
     assoc.quantidade = quantidade
     try:
@@ -127,7 +152,7 @@ def editar_peca(conjunto_id, assoc_id):
 @conjuntos_bp.route("/<int:conjunto_id>/pecas/remover/<int:assoc_id>", methods=["POST"], endpoint="remover_peca")
 def remover_peca(conjunto_id, assoc_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
-    assoc = ConjuntoPeca.query.get_or_404(assoc_id)
+    assoc = ConjuntoPeca.query.filter_by(id=assoc_id, conjunto_id=conjunto.id).first_or_404()
     db.session.delete(assoc)
     try:
         db.session.commit()
@@ -147,4 +172,3 @@ listar_pecas_conjunto = detalhe
 adicionar_peca_conjunto = adicionar_peca
 editar_peca_conjunto = editar_peca
 excluir_peca_conjunto = remover_peca
-

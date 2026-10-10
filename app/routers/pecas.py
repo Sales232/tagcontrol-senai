@@ -19,12 +19,12 @@ def novo():
         codigo = request.form.get("codigo", "").strip()
         descricao = request.form.get("descricao", "").strip()
         codigo_barras = request.form.get("codigo_barras", "").strip()
+        peca = Peca(codigo=codigo, descricao=descricao, codigo_barras=codigo_barras)
 
         if not codigo or not descricao or not codigo_barras:
             flash("Todos os campos são obrigatórios.", "error")
-            return render_template("pecas/form.html", peca=None)
+            return render_template("pecas/form.html", peca=peca)
 
-        peca = Peca(codigo=codigo, descricao=descricao, codigo_barras=codigo_barras)
         db.session.add(peca)
         try:
             db.session.commit()
@@ -32,7 +32,8 @@ def novo():
             return redirect(url_for("pecas.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Erro ao adicionar peça.", "error")
+            flash("Já existe uma peça com esse código ou código de barras.", "error")
+            return render_template("pecas/form.html", peca=peca)
 
     return render_template("pecas/form.html", peca=None)
 
@@ -42,9 +43,19 @@ def editar(peca_id):
     peca = Peca.query.get_or_404(peca_id)
 
     if request.method == "POST":
-        peca.codigo = request.form.get("codigo", "").strip()
-        peca.descricao = request.form.get("descricao", "").strip()
-        peca.codigo_barras = request.form.get("codigo_barras", "").strip()
+        codigo = request.form.get("codigo", "").strip()
+        descricao = request.form.get("descricao", "").strip()
+        codigo_barras = request.form.get("codigo_barras", "").strip()
+        if not codigo or not descricao or not codigo_barras:
+            flash("Todos os campos são obrigatórios.", "error")
+            return render_template(
+                "pecas/form.html",
+                peca=Peca(id=peca.id, codigo=codigo, descricao=descricao, codigo_barras=codigo_barras),
+            )
+
+        peca.codigo = codigo
+        peca.descricao = descricao
+        peca.codigo_barras = codigo_barras
 
         try:
             db.session.commit()
@@ -52,7 +63,11 @@ def editar(peca_id):
             return redirect(url_for("pecas.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Erro ao atualizar peça.", "error")
+            flash("Já existe uma peça com esse código ou código de barras.", "error")
+            return render_template(
+                "pecas/form.html",
+                peca=Peca(id=peca_id, codigo=codigo, descricao=descricao, codigo_barras=codigo_barras),
+            )
 
     return render_template("pecas/form.html", peca=peca)
 
@@ -60,13 +75,17 @@ def editar(peca_id):
 @pecas_bp.route("/apagar/<int:peca_id>", methods=["POST"], endpoint="apagar")
 def apagar(peca_id):
     peca = Peca.query.get_or_404(peca_id)
+    if peca.conjuntos_assoc or peca.pedidos_assoc or peca.leituras:
+        flash("Não é possível apagar uma peça associada a conjuntos, pedidos ou leituras.", "error")
+        return redirect(url_for("pecas.listar"))
+
     db.session.delete(peca)
     try:
         db.session.commit()
         flash("Peça excluída com sucesso!", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Erro ao excluir peça.", "error")
+        flash("Não foi possível excluir a peça por causa de registros relacionados.", "error")
 
     return redirect(url_for("pecas.listar"))
 
@@ -75,4 +94,3 @@ adicionar_peca = novo
 excluir_peca = apagar
 adicionar = novo
 """Compatibilidade com nomes antigos de funções já existentes no projeto."""
-
