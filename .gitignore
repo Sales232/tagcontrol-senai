@@ -7,6 +7,28 @@ __pycache__/
 .venv/
 venv/
 env/
+.tox/
+.nox/
+.Python
+
+# Build and packaging artifacts
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+wheels/
+share/python-wheels/
+parts/
+sdist/
+*.egg
+*.egg-info/
+pip-wheel-metadata/
+installed.cfg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Local configuration and secrets
 .env
@@ -31,7 +53,9 @@ env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.hypothesis/
 .coverage
+.coverage.*
 htmlcov/
 
 # Logs and OS metadata
