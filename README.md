@@ -80,6 +80,4 @@ python -m unittest discover -s tests -v
 
 ## Estado e limites conhecidos
 
-A especificação `DES_Expedicao_Silos.md` é citada em materiais existentes, mas não está disponível no repositório. Portanto, a documentação funcional descreve somente o comportamento verificável no código e nos testes; não substitui a validação com os requisitos oficiais do produto.
-
 O acesso à câmera depende de permissão do navegador e contexto seguro (`localhost` ou HTTPS). Para acessar a câmera de outro dispositivo, a aplicação precisa estar servida por HTTPS. A biblioteca do scanner é local; não é baixada de uma CDN em tempo de execução.
