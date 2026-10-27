@@ -1,52 +1,115 @@
 {% extends "base.html" %}
-{% block title %}Conjunto {{ conjunto.codigo }}{% endblock %}
+{% block title %}Conjunto {{ conjunto.codigo }} | TagControl{% endblock %}
 {% block content %}
-<h1>Conjunto {{ conjunto.codigo }} — {{ conjunto.descricao }}</h1>
+<section class="page-heading detail-heading">
+    <div>
+        <p class="eyebrow">Catálogo / Conjuntos</p>
+        <h1>{{ conjunto.codigo }}</h1>
+        <p>{{ conjunto.descricao }}</p>
+    </div>
+    <div class="table-actions">
+        <a class="button button-secondary" href="{{ url_for('conjuntos.listar') }}">Voltar aos conjuntos</a>
+        <a class="button" href="{{ url_for('conjuntos.editar', conjunto_id=conjunto.id) }}">Editar conjunto</a>
+    </div>
+</section>
 
-<h2>Peças neste conjunto</h2>
-<table>
-    <thead>
-        <tr><th>Código</th><th>Descrição</th><th>Quantidade</th><th></th></tr>
-    </thead>
-    <tbody>
-    {% for assoc in conjunto.pecas_assoc %}
-        <tr>
-            <td>{{ assoc.peca.codigo }}</td>
-            <td>{{ assoc.peca.descricao }}</td>
-            <td>
-                <form method="post" action="{{ url_for('conjuntos.editar_peca', conjunto_id=conjunto.id, assoc_id=assoc.id) }}" style="display:inline">
-                    <input type="number" name="quantidade" value="{{ assoc.quantidade }}" min="1" style="width:4em">
-                    <button type="submit">Atualizar</button>
-                </form>
-            </td>
-            <td>
-                <form method="post" action="{{ url_for('conjuntos.remover_peca', conjunto_id=conjunto.id, assoc_id=assoc.id) }}" style="display:inline" onsubmit="return confirm('Remover essa peça do conjunto?');">
-                    <button type="submit">Remover</button>
-                </form>
-            </td>
-        </tr>
+<section class="detail-section">
+    <div class="section-heading">
+        <h2>Composição do conjunto</h2>
+    </div>
+    <div class="panel table-panel">
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col">Quantidade</th><th scope="col">Ações</th></tr>
+                </thead>
+                <tbody>
+                {% for assoc in conjunto.componentes %}
+                    <tr>
+                        {% if assoc.peca %}
+                        <td><strong>{{ assoc.peca.codigo }}</strong> <span class="muted">Peça</span></td>
+                        <td>{{ assoc.peca.descricao }}</td>
+                        {% else %}
+                        <td>
+                            <strong><a href="{{ url_for('conjuntos.detalhe', conjunto_id=assoc.subconjunto.id) }}">{{ assoc.subconjunto.codigo }}</a></strong>
+                            <span class="muted">Subconjunto</span>
+                        </td>
+                        <td>{{ assoc.subconjunto.descricao }}</td>
+                        {% endif %}
+                        <td>
+                            <form class="inline-form" method="post" action="{{ url_for('conjuntos.editar_peca', conjunto_id=conjunto.id, assoc_id=assoc.id) }}">
+                                <label class="field-label" for="quantidade-{{ assoc.id }}">Quantidade por conjunto</label>
+                                <input id="quantidade-{{ assoc.id }}" type="number" name="quantidade" value="{{ assoc.quantidade }}" min="1" aria-label="Quantidade do componente">
+                                <button type="submit">Atualizar</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="{{ url_for('conjuntos.remover_peca', conjunto_id=conjunto.id, assoc_id=assoc.id) }}" onsubmit="return confirm('Remover este componente do conjunto?');">
+                                <button class="button-danger" type="submit">Remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="empty-row"><td class="empty-state" colspan="4">Nenhum componente associado ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="detail-section">
+    <div class="section-heading">
+        <h2>Adicionar subconjunto</h2>
+    </div>
+    {% if conjuntos_disponiveis %}
+    <div class="panel add-item-panel">
+        <form class="inline-form" method="post" action="{{ url_for('conjuntos.adicionar_subconjunto', conjunto_id=conjunto.id) }}">
+            <label class="form-field">
+                <span>Subconjunto</span>
+                <select name="subconjunto_id" required>
+                    {% for subconjunto in conjuntos_disponiveis %}
+                        <option value="{{ subconjunto.id }}">{{ subconjunto.codigo }} — {{ subconjunto.descricao }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="form-field">
+                <span>Quantidade por conjunto</span>
+                <input type="number" name="quantidade" min="1" value="1" required>
+            </label>
+            <button type="submit">Adicionar subconjunto</button>
+        </form>
+        <p class="muted">Composições circulares são bloqueadas. Se o subconjunto já existir, a quantidade será somada.</p>
+    </div>
     {% else %}
-        <tr><td colspan="4">Nenhuma peça associada ainda.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <p class="panel empty-state">Cadastre outro conjunto para usá-lo como subconjunto.</p>
+    {% endif %}
+</section>
 
-<h2>Adicionar peça ao conjunto</h2>
-{% if pecas_disponiveis %}
-<form method="post" action="{{ url_for('conjuntos.adicionar_peca', conjunto_id=conjunto.id) }}">
-    <label>Peça
-        <select name="peca_id" required>
-            {% for peca in pecas_disponiveis %}
-                <option value="{{ peca.id }}">{{ peca.codigo }} — {{ peca.descricao }}</option>
-            {% endfor %}
-        </select>
-    </label>
-    <label>Quantidade
-        <input type="number" name="quantidade" min="1" value="1" required>
-    </label>
-    <button type="submit">Adicionar</button>
-</form>
-{% else %}
-<p>Todas as peças cadastradas já estão neste conjunto.</p>
-{% endif %}
+<section class="detail-section">
+    <div class="section-heading">
+        <h2>Adicionar peça</h2>
+    </div>
+    {% if pecas_disponiveis %}
+    <div class="panel add-item-panel">
+        <form class="inline-form" method="post" action="{{ url_for('conjuntos.adicionar_peca', conjunto_id=conjunto.id) }}">
+            <label class="form-field">
+                <span>Peça</span>
+                <select name="peca_id" required>
+                    {% for peca in pecas_disponiveis %}
+                        <option value="{{ peca.id }}">{{ peca.codigo }} — {{ peca.descricao }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="form-field">
+                <span>Quantidade</span>
+                <input type="number" name="quantidade" min="1" value="1" required>
+            </label>
+            <button type="submit">Adicionar peça</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="panel empty-state">Todas as peças cadastradas já estão neste conjunto.</p>
+    {% endif %}
+</section>
 {% endblock %}

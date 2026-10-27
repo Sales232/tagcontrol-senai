@@ -1,29 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Conjuntos{% endblock %}
+{% block title %}Conjuntos | TagControl{% endblock %}
 {% block content %}
-<h1>Conjuntos cadastrados</h1>
-<a href="{{ url_for('conjuntos.novo') }}">+ Novo conjunto</a>
-<table>
-    <thead>
-        <tr><th>Código</th><th>Descrição</th><th>Peças</th><th></th></tr>
-    </thead>
-    <tbody>
-    {% for conjunto in conjuntos %}
-        <tr>
-            <td>{{ conjunto.codigo }}</td>
-            <td>{{ conjunto.descricao }}</td>
-            <td>{{ conjunto.pecas_assoc|length }}</td>
-            <td>
-                <a href="{{ url_for('conjuntos.detalhe', conjunto_id=conjunto.id) }}">Ver/gerenciar peças</a>
-                <a href="{{ url_for('conjuntos.editar', conjunto_id=conjunto.id) }}">Editar</a>
-                <form method="post" action="{{ url_for('conjuntos.apagar', conjunto_id=conjunto.id) }}" style="display:inline" onsubmit="return confirm('Apagar conjunto {{ conjunto.codigo }}?');">
-                    <button type="submit">Apagar</button>
-                </form>
-            </td>
-        </tr>
-    {% else %}
-        <tr><td colspan="4">Nenhum conjunto cadastrado.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Catálogo</p>
+        <h1>Conjuntos</h1>
+        <p>Organize peças e subconjuntos em composições reutilizáveis.</p>
+    </div>
+    <a class="button" href="{{ url_for('conjuntos.novo') }}">Novo conjunto</a>
+</section>
+
+<section class="panel table-panel" aria-label="Conjuntos cadastrados">
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col">Componentes diretos</th><th scope="col">Ações</th></tr>
+            </thead>
+            <tbody>
+            {% for conjunto in conjuntos %}
+                <tr>
+                    <td><strong>{{ conjunto.codigo }}</strong></td>
+                    <td>{{ conjunto.descricao }}</td>
+                    <td>{{ conjunto.componentes|length }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="text-link" href="{{ url_for('conjuntos.detalhe', conjunto_id=conjunto.id) }}">Gerenciar composição</a>
+                            <a class="text-link" href="{{ url_for('conjuntos.editar', conjunto_id=conjunto.id) }}">Editar</a>
+                            <form method="post" action="{{ url_for('conjuntos.apagar', conjunto_id=conjunto.id) }}" onsubmit="return confirm('Apagar conjunto {{ conjunto.codigo }}?');">
+                                <button class="button-danger" type="submit">Apagar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="empty-row"><td class="empty-state" colspan="4">Nenhum conjunto cadastrado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

@@ -1,13 +1,15 @@
 # Tagcontrol
 
-Aplicação web Flask para cadastrar peças, organizar conjuntos e acompanhar a separação de itens de pedidos por leitura de código de barras.
+Aplicação web Flask para cadastrar peças, organizar conjuntos e acompanhar a separação de itens de pedidos por leitura de QR Codes.
 
 ## Funcionalidades disponíveis
 
 - Cadastro, edição, consulta e exclusão de peças, conjuntos e pedidos.
-- Composição de conjuntos por peças e quantidades.
+- Composição hierárquica de conjuntos por peças e subconjuntos, com quantidades.
 - Composição de pedidos por itens e quantidades necessárias.
-- Validação de códigos de barras na separação, registro de leituras e cálculo do progresso do pedido.
+- Expansão de conjuntos no pedido, com soma automática de peças repetidas e snapshot da composição aplicada.
+- Validação de QR Codes na separação, registro de leituras e cálculo do progresso do pedido.
+- Checklist de conferência final, registro de divergências e liberação do pedido para expedição.
 - Scanner de câmera no navegador móvel, com a biblioteca `html5-qrcode` armazenada localmente.
 - Dados de demonstração por meio do comando `flask seed-demo`.
 

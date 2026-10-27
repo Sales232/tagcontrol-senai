@@ -1,14 +1,28 @@
 {% extends "base.html" %}
-{% block title %}{{ "Editar" if conjunto else "Novo" }} conjunto{% endblock %}
+{% block title %}{{ "Editar" if conjunto else "Novo" }} conjunto | TagControl{% endblock %}
 {% block content %}
-<h1>{{ "Editar" if conjunto else "Novo" }} conjunto</h1>
-<form method="post">
-    <label>Código
-        <input type="text" name="codigo" value="{{ conjunto.codigo if conjunto else '' }}" required maxlength="50">
-    </label><br>
-    <label>Descrição
-        <input type="text" name="descricao" value="{{ conjunto.descricao if conjunto else '' }}" required maxlength="200">
-    </label><br>
-    <button type="submit">Salvar</button>
-</form>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Catálogo / Conjuntos</p>
+        <h1>{{ "Editar conjunto" if conjunto else "Novo conjunto" }}</h1>
+        <p>Defina a identificação e a descrição do conjunto.</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <form method="post" class="stacked-form">
+        <label class="form-field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ conjunto.codigo if conjunto else '' }}" required maxlength="50">
+        </label>
+        <label class="form-field">
+            <span>Descrição</span>
+            <input type="text" name="descricao" value="{{ conjunto.descricao if conjunto else '' }}" required maxlength="200">
+        </label>
+        <div class="form-actions">
+            <button type="submit">Salvar conjunto</button>
+            <a class="button button-secondary" href="{{ url_for('conjuntos.listar') }}">Cancelar</a>
+        </div>
+    </form>
+</section>
 {% endblock %}
