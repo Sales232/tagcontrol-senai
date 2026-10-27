@@ -18,12 +18,12 @@ def novo():
     if request.method == "POST":
         codigo = request.form.get("codigo", "").strip()
         descricao = request.form.get("descricao", "").strip()
-        codigo_barras = request.form.get("codigo_barras", "").strip()
-        peca = Peca(codigo=codigo, descricao=descricao, codigo_barras=codigo_barras)
+        codigo_qr = request.form.get("codigo_qr", "").strip()
+        peca = Peca(codigo=codigo, descricao=descricao, codigo_qr=codigo_qr)
 
-        if not codigo or not descricao or not codigo_barras:
+        if not codigo or not descricao or not codigo_qr:
             flash("Todos os campos são obrigatórios.", "error")
-            return render_template("pecas/form.html", peca=peca)
+            return render_template("pecas/form.html", peca=peca, is_new_piece=True)
 
         db.session.add(peca)
         try:
@@ -32,10 +32,10 @@ def novo():
             return redirect(url_for("pecas.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Já existe uma peça com esse código ou código de barras.", "error")
-            return render_template("pecas/form.html", peca=peca)
+            flash("Já existe uma peça com esse código ou QR Code.", "error")
+            return render_template("pecas/form.html", peca=peca, is_new_piece=True)
 
-    return render_template("pecas/form.html", peca=None)
+    return render_template("pecas/form.html", peca=None, is_new_piece=True)
 
 
 @pecas_bp.route("/editar/<int:peca_id>", methods=["GET", "POST"], endpoint="editar")
@@ -45,17 +45,18 @@ def editar(peca_id):
     if request.method == "POST":
         codigo = request.form.get("codigo", "").strip()
         descricao = request.form.get("descricao", "").strip()
-        codigo_barras = request.form.get("codigo_barras", "").strip()
-        if not codigo or not descricao or not codigo_barras:
+        codigo_qr = request.form.get("codigo_qr", "").strip()
+        if not codigo or not descricao or not codigo_qr:
             flash("Todos os campos são obrigatórios.", "error")
             return render_template(
                 "pecas/form.html",
-                peca=Peca(id=peca.id, codigo=codigo, descricao=descricao, codigo_barras=codigo_barras),
+                peca=Peca(id=peca.id, codigo=codigo, descricao=descricao, codigo_qr=codigo_qr),
+                is_new_piece=False,
             )
 
         peca.codigo = codigo
         peca.descricao = descricao
-        peca.codigo_barras = codigo_barras
+        peca.codigo_qr = codigo_qr
 
         try:
             db.session.commit()
@@ -63,13 +64,14 @@ def editar(peca_id):
             return redirect(url_for("pecas.listar"))
         except IntegrityError:
             db.session.rollback()
-            flash("Já existe uma peça com esse código ou código de barras.", "error")
+            flash("Já existe uma peça com esse código ou QR Code.", "error")
             return render_template(
                 "pecas/form.html",
-                peca=Peca(id=peca_id, codigo=codigo, descricao=descricao, codigo_barras=codigo_barras),
+                peca=Peca(id=peca_id, codigo=codigo, descricao=descricao, codigo_qr=codigo_qr),
+                is_new_piece=False,
             )
 
-    return render_template("pecas/form.html", peca=peca)
+    return render_template("pecas/form.html", peca=peca, is_new_piece=False)
 
 
 @pecas_bp.route("/apagar/<int:peca_id>", methods=["POST"], endpoint="apagar")

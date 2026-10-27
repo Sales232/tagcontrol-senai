@@ -8,22 +8,22 @@ DEMO_PECAS = (
     {
         "codigo": "PEC-001",
         "descricao": "Parafuso M8 x 30",
-        "codigo_barras": "750000000001",
+        "codigo_qr": "750000000001",
     },
     {
         "codigo": "PEC-002",
         "descricao": "Porca M8",
-        "codigo_barras": "750000000002",
+        "codigo_qr": "750000000002",
     },
     {
         "codigo": "PEC-003",
         "descricao": "Arruela M8",
-        "codigo_barras": "750000000003",
+        "codigo_qr": "750000000003",
     },
     {
         "codigo": "PEC-004",
         "descricao": "Terminal elétrico",
-        "codigo_barras": "750000000004",
+        "codigo_qr": "750000000004",
     },
 )
 
@@ -44,14 +44,14 @@ DEMO_PEDIDOS = (
 )
 
 
-def _get_or_create_peca(codigo: str, descricao: str, codigo_barras: str) -> Peca:
+def _get_or_create_peca(codigo: str, descricao: str, codigo_qr: str) -> Peca:
     peca = Peca.query.filter_by(codigo=codigo).first()
     if peca is None:
-        peca = Peca(codigo=codigo, descricao=descricao, codigo_barras=codigo_barras)
+        peca = Peca(codigo=codigo, descricao=descricao, codigo_qr=codigo_qr)
         db.session.add(peca)
     else:
         peca.descricao = descricao
-        peca.codigo_barras = codigo_barras
+        peca.codigo_qr = codigo_qr
     return peca
 
 
@@ -86,7 +86,7 @@ def seed_demo_data() -> dict[str, object]:
         peca = _get_or_create_peca(
             codigo=dados["codigo"],
             descricao=dados["descricao"],
-            codigo_barras=dados["codigo_barras"],
+            codigo_qr=dados["codigo_qr"],
         )
         pecas[dados["codigo"]] = peca
 

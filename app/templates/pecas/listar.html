@@ -1,28 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Peças{% endblock %}
+{% block title %}Peças | TagControl{% endblock %}
 {% block content %}
-<h1>Peças cadastradas</h1>
-<a href="{{ url_for('pecas.novo') }}">+ Nova peça</a>
-<table>
-    <thead>
-        <tr><th>Código</th><th>Descrição</th><th>Código de barras</th><th></th></tr>
-    </thead>
-    <tbody>
-    {% for peca in pecas %}
-        <tr>
-            <td>{{ peca.codigo }}</td>
-            <td>{{ peca.descricao }}</td>
-            <td>{{ peca.codigo_barras }}</td>
-            <td>
-                <a href="{{ url_for('pecas.editar', peca_id=peca.id) }}">Editar</a>
-                <form method="post" action="{{ url_for('pecas.apagar', peca_id=peca.id) }}" style="display:inline" onsubmit="return confirm('Apagar peça {{ peca.codigo }}?');">
-                    <button type="submit">Apagar</button>
-                </form>
-            </td>
-        </tr>
-    {% else %}
-        <tr><td colspan="4">Nenhuma peça cadastrada.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Catálogo</p>
+        <h1>Peças</h1>
+        <p>Gerencie as peças e seus QR Codes.</p>
+    </div>
+    <a class="button" href="{{ url_for('pecas.novo') }}">Nova peça</a>
+</section>
+
+<section class="panel table-panel" aria-label="Peças cadastradas">
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col">QR Code</th><th scope="col">Ações</th></tr>
+            </thead>
+            <tbody>
+            {% for peca in pecas %}
+                <tr>
+                    <td><strong>{{ peca.codigo }}</strong></td>
+                    <td>{{ peca.descricao }}</td>
+                    <td>{{ peca.codigo_qr }}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="text-link" href="{{ url_for('pecas.editar', peca_id=peca.id) }}">Editar</a>
+                            <form method="post" action="{{ url_for('pecas.apagar', peca_id=peca.id) }}" onsubmit="return confirm('Apagar peça {{ peca.codigo }}?');">
+                                <button class="button-danger" type="submit">Apagar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="empty-row"><td class="empty-state" colspan="4">Nenhuma peça cadastrada.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

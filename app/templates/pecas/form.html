@@ -1,17 +1,73 @@
 {% extends "base.html" %}
-{% block title %}{{ "Editar" if peca else "Nova" }} peça{% endblock %}
+{% block title %}{{ "Editar" if peca else "Nova" }} peça | TagControl{% endblock %}
+{% block head %}
+{{ super() }}
+{% if is_new_piece %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/peca-scanner.css') }}">
+{% endif %}
+{% endblock %}
 {% block content %}
-<h1>{{ "Editar" if peca else "Nova" }} peça</h1>
-<form method="post">
-    <label>Código
-        <input type="text" name="codigo" value="{{ peca.codigo if peca else '' }}" required maxlength="50">
-    </label><br>
-    <label>Descrição
-        <input type="text" name="descricao" value="{{ peca.descricao if peca else '' }}" required maxlength="200">
-    </label><br>
-    <label>Código de barras
-        <input type="text" name="codigo_barras" value="{{ peca.codigo_barras if peca else '' }}" required maxlength="50">
-    </label><br>
-    <button type="submit">Salvar</button>
-</form>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Catálogo / Peças</p>
+        <h1>{{ "Nova peça" if is_new_piece else "Editar peça" }}</h1>
+        <p>Preencha os dados para {{ "cadastrar uma peça." if is_new_piece else "atualizar o cadastro." }}</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <form method="post" class="stacked-form">
+        <label class="form-field">
+            <span>Código</span>
+            <input type="text" name="codigo" value="{{ peca.codigo if peca else '' }}" required maxlength="50">
+        </label>
+        <label class="form-field">
+            <span>Descrição</span>
+            <input type="text" name="descricao" value="{{ peca.descricao if peca else '' }}" required maxlength="200">
+        </label>
+        <label class="form-field">
+            <span>QR Code</span>
+            <input
+                type="text"
+                name="codigo_qr"
+                value="{{ peca.codigo_qr if peca else '' }}"
+                required
+                maxlength="50"
+                {% if is_new_piece %}id="piece-qr-input"{% endif %}
+            >
+        </label>
+        {% if is_new_piece %}
+        <section class="piece-scanner" aria-label="Leitura do QR Code">
+            <p>Aponte a câmera para o QR Code e mantenha-o dentro do retângulo de leitura. Deixe-o bem iluminado, sem reflexos, e aguarde o foco.</p>
+            <label for="piece-camera-select">Câmera</label>
+            <select id="piece-camera-select" aria-label="Selecionar câmera" disabled>
+                <option value="">Câmera padrão (traseira)</option>
+            </select>
+            <div id="piece-reader" role="region" aria-label="Pré-visualização da câmera"></div>
+            <div class="piece-scanner-controls">
+                <button id="piece-start-scanner" type="button">Abrir scanner</button>
+                <button id="piece-stop-scanner" type="button" hidden>Parar câmera</button>
+                <button id="piece-scan-again" type="button" hidden>Ler outro código</button>
+            </div>
+            <p id="piece-scanner-status" role="status" aria-live="polite">
+                A câmera ainda não foi iniciada.
+            </p>
+            <section id="piece-scan-result" aria-live="polite" hidden>
+                <h2>QR Code capturado</h2>
+                <output id="piece-scanned-code"></output>
+            </section>
+        </section>
+        {% endif %}
+        <div class="form-actions">
+            <button type="submit">Salvar peça</button>
+            <a class="button button-secondary" href="{{ url_for('pecas.listar') }}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% if is_new_piece %}
+
+<script src="{{ url_for('static', filename='vendor/html5-qrcode.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qr-scanner-config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/peca-scanner.js') }}" defer></script>
+{% endif %}
 {% endblock %}

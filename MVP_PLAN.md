@@ -8,7 +8,7 @@ O foco do MVP é demonstrar, de forma funcional e com baixo custo, o seguinte fl
 
 1. Cadastrar peças e pedidos.
 2. Associar itens ao pedido.
-3. Ler um código de barras via câmera do celular.
+3. Ler um QR Code via câmera do celular.
 4. Validar em tempo real se a peça lida pertence ao pedido em andamento.
 5. Apresentar feedback imediato de sucesso, duplicidade ou peça fora do pedido.
 6. Persistir o progresso da separação.
@@ -67,19 +67,22 @@ Modelos existentes:
   - `id`
   - `codigo`
   - `descricao`
-  - `codigo_barras`
+  - `codigo_qr`
   - relacionamento com conjunto e pedido
 - `Conjunto`
   - `id`
   - `codigo`
   - `descricao`
 - `ConjuntoPeca`
-  - associação entre conjunto e peça
-  - campo `quantidade`
+  - associação entre conjunto e peça ou subconjunto
+  - campo `quantidade` por componente
 - `Pedido`
   - `id`
   - `codigo`
-  - relacionamento com itens e leituras
+  - relacionamento com itens, leituras, conferências e composições aplicadas
+- `PedidoConjunto`
+  - conjunto de origem e quantidade aplicada ao pedido
+  - snapshots do código e descrição do conjunto
 - `PedidoItem`
   - `pedido_id`
   - `peca_id`
@@ -98,7 +101,7 @@ Enum existente:
   - `DUPLICADA`
   - `FORA_DO_PEDIDO`
 
-Observação importante: a estrutura atual já define a persistência da leitura; porém ela ainda não está conectada ao fluxo real de scanner de código de barras nem ao painel de acompanhamento da expedição.
+Observação: o scanner de QR Code, a validação de leituras, o painel de acompanhamento, a conferência final manual e a liberação do pedido estão implementados. A Macro 1 acrescenta a hierarquia de conjuntos e a expansão automática das quantidades para os itens do pedido.
 
 ### 2.5 Rotas existentes
 
@@ -120,7 +123,8 @@ Rotas implementadas:
   - criação
   - edição
   - exclusão
-  - associação de peças ao conjunto
+  - associação de peças e subconjuntos ao conjunto
+  - bloqueio de ciclos na hierarquia
 - Pedidos:
   - listagem
   - criação
@@ -128,8 +132,10 @@ Rotas implementadas:
   - exclusão
   - detalhe de pedido
   - adicionar item ao pedido
+  - aplicar composição de conjunto antes das leituras, consolidando peças repetidas e guardando a origem
   - editar quantidade do item
   - remover item do pedido
+  - checklist de conferência final, registro de divergências e reabertura de pedidos liberados
 
 ### 2.6 Páginas e templates existentes
 
@@ -141,8 +147,9 @@ A aplicação usa templates server-side com Jinja2. Há páginas para:
 - `app/templates/conjuntos/*`
 - `app/templates/pedidos/listar.html`
 - `app/templates/pedidos/detalhe.html`
+- `app/templates/pedidos/conferencia.html`
 
-Esses templates cobrem a parte administrativa do cadastro, mas ainda não cobrem a tela de expedição por scanner móvel nem o painel de progresso do pedido.
+Além das páginas administrativas, há tela de scanner móvel, progresso do pedido e, nesta etapa, checklist final e liberação para expedição.
 
 ### 2.7 Testes existentes
 
@@ -157,37 +164,31 @@ Testes presentes:
 - exigência de `SECRET_KEY`
 - presença dos campos principais nos modelos `Peca`, `Conjunto` e `Pedido`
 
-A cobertura atual é mínima e não valida o fluxo de expedição, o scanner e o progresso do pedido.
+A cobertura atual inclui testes de CRUD, scanner, progresso e do fluxo de conferência final; a validação física com câmera real continua dependendo de teste no dispositivo.
 
 ### 2.8 O que já está implementado
 
-As partes do MVP já desenvolvidas atualmente são:
+O estado implementado no repositório inclui:
 
 - estrutura principal da aplicação Flask
 - factory da app
-- modelos de domínio básicos
-- banco SQLite com migração inicial
-- rotas de CRUD para peças, conjuntos e pedidos
-- templates administrativas para gerenciar entidades
-- início do modelo de leitura (`Leitura`) com enum de status
-- testes básicos de inicialização da aplicação
+- modelos de peças, conjuntos, pedidos, leituras e conferências
+- migrações de schema via Alembic
+- CRUD de peças, conjuntos e pedidos
+- hierarquia reutilizável de conjuntos, com peças e subconjuntos e bloqueio de ciclos
+- expansão recursiva de quantidades para itens do pedido, consolidação de peças repetidas e snapshot da composição aplicada
+- scanner QR, registro das leituras e progresso por pedido
+- checklist de conferência final, registro de divergências, reconciliação e liberação
+- testes automatizados de rotas e regras de negócio
 
 ### 2.9 O que ainda precisa ser desenvolvido
 
-As partes que ainda faltam para cumprir o DES no MVP são:
+O código cobre o fluxo funcional descrito acima, mas ainda há validações e decisões de produto pendentes antes de considerar o MVP pronto para uso fora da demonstração:
 
-- leitura de código de barras via câmera do navegador
-- decodificação do código de barras no lado do cliente
-- seleção do pedido ativo para separação
-- validação real da peça lida contra o pedido ativo
-- regra de duplicidade
-- feedback visual em tempo real
-- persistência do progresso de separação por pedido
-- página de acompanhamento do pedido
-- massa de dados fictícia para demonstração da banca
-- tela de expedição otimizada para mobile
-- testes de fluxo principal de leitura/validação
-- preparação de layout de apresentação para feira
+- testar câmera, leitura e usabilidade no dispositivo móvel que será usado na apresentação
+- validar com o usuário do MVP a sequência operacional das etapas posteriores à separação e à conferência
+- definir e priorizar etapas posteriores, como embalagem, carregamento ou indicadores, sem presumir que façam parte do processo confirmado
+- avaliar requisitos de operação multiusuário, acesso e implantação, atualmente fora do escopo implementado
 
 ## 3. Critérios de sucesso
 
@@ -197,7 +198,7 @@ O MVP será considerado concluído quando:
 2. O sistema consegue associar itens necessários ao pedido.
 3. O operador abre a tela de expedição no celular.
 4. O navegador consegue acessar a câmera do dispositivo.
-5. O sistema lê um código de barras do produto.
+5. O sistema lê um QR Code do produto.
 6. O sistema valida se a peça pertence ao pedido selecionado.
 7. O sistema identifica duplicidade quando a peça já foi separada anteriormente.
 8. O sistema exibe feedback visual claro e imediato.
@@ -213,7 +214,7 @@ O MVP será considerado concluído quando:
 - Cadastro de peças
 - Cadastro de conjuntos/subconjuntos
 - Cadastro de pedidos e itens
-- Leitura de código de barras via câmera de celular
+- Leitura de QR Code via câmera de celular
 - Validação em tempo real da peça lida
 - Feedback visual de sucesso, duplicidade e fora do pedido
 - Persistência do progresso da separação
@@ -237,8 +238,8 @@ O fluxo principal do MVP deve seguir o seguinte caminho:
 
 1. O usuário acessa a aplicação pelo navegador em um celular.
 2. O sistema seleciona ou exibe um pedido ativo.
-3. O operador aponta a câmera para o código de barras de uma peça.
-4. O navegador decodifica o código de barras no cliente.
+3. O operador aponta a câmera para o QR Code de uma peça.
+4. O navegador decodifica o QR Code no cliente.
 5. O backend valida a peça contra o pedido em andamento.
 6. O sistema compara o código lido com o cadastro de peças e o pedido.
 7. O sistema verifica se a peça:
@@ -295,19 +296,19 @@ Resultado esperado:
 
 Objetivo:
 
-- Implementar a leitura de código de barras via câmera do celular.
+- Implementar a leitura de QR Code via câmera do celular.
 
 Atividades:
 
 - Adicionar fluxo para acesso à câmera (`getUserMedia`)
-- Integrar biblioteca de leitura de código de barras do lado do cliente
+- Integrar biblioteca de leitura de QR Code do lado do cliente
 - Exibir preview da câmera em tela
 - Capturar código lido
 - Tratar erros de permissão e leitura inválida
 
 Resultado esperado:
 
-- A aplicação lê código de barras do navegador em mobile
+- A aplicação lê QR Code do navegador em mobile
 
 ### Checkpoint funcional 4 — Validação em tempo real
 
@@ -417,7 +418,7 @@ Resultado esperado:
 
 ### Dia 2 — Leitura, validação e apresentação
 
-#### 09:00–11:00 | Implementar leitura de código de barras via câmera
+#### 09:00–11:00 | Implementar leitura de QR Code via câmera
 - Acesso à câmera
 - Biblioteca de leitura
 - Captura do valor lido
@@ -454,14 +455,14 @@ Resultado esperado:
 
 ### 8.1 Testes de modelo e domínio
 
-- Criar peça com código e código de barras
+- Criar peça com código e QR Code
 - Criar pedido com itens
 - Adicionar peça ao pedido
 - Editar quantidade do item
 - Remover item do pedido
 - Verificar integridade do banco
 
-### 8.2 Testes de leitura de código de barras
+### 8.2 Testes de leitura de QR Code
 
 - Ler código válido
 - Ler código inexistente
@@ -501,7 +502,7 @@ Resultado esperado:
 O MVP será aceito quando:
 
 - A aplicação funcionará em navegador mobile,
-- A leitura via câmera decodifica o código de barras,
+- A leitura via câmera decodifica o QR Code,
 - O pedido ativo é validado automaticamente,
 - O sistema identifica duplicidade e fora do pedido,
 - O painel mostra progresso de separação,
@@ -523,10 +524,10 @@ O MVP será aceito quando:
 
 ### Scanner e leitura
 - [ ] Acesso à câmera funcionando
-- [ ] Leitura de código de barras funcionando
+- [ ] Leitura de QR Code funcionando
 - [x] Tratamento de erro implementado
 
-Nota: a tela, a biblioteca e os recursos do navegador foram verificados em localhost. A captura com câmera física e código de barras real ainda depende de validação em um celular.
+Nota: a tela, a biblioteca e os recursos do navegador foram verificados em localhost. A captura com câmera física e QR Code real ainda depende de validação em um celular.
 
 ### Validação de separação
 - [x] Peça correta aceita
@@ -570,7 +571,7 @@ Estas regras devem guiar o desenvolvimento do MVP e evitar desvios do escopo:
    - Cadastro → pedido → leitura → validação → progresso → painel.
 
 6. Usar o navegador como ponto de leitura.
-   - A coleta de código de barras deve acontecer no lado do cliente.
+   - A coleta de QR Code deve acontecer no lado do cliente.
    - O backend apenas valida e persiste o resultado.
 
 7. Não perder tempo com soluções de produção.

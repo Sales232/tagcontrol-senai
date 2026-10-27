@@ -6,7 +6,9 @@
 }
 
 .scanner-page select,
-.scanner-controls button {
+.scanner-controls button,
+.manual-scan-form input,
+.manual-scan-form button {
     box-sizing: border-box;
     font: inherit;
     margin: 0.35rem 0;
@@ -17,6 +19,24 @@
 .scanner-page select {
     display: block;
     max-width: 100%;
+    width: 100%;
+}
+
+.manual-scan-form {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.manual-scan-form input,
+.manual-scan-form button {
+    box-sizing: border-box;
+    font: inherit;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.manual-scan-form input {
     width: 100%;
 }
 
@@ -38,6 +58,21 @@
     padding: 0.75rem;
 }
 
+.pedido-progress-track {
+    background: #d1d5db;
+    border-radius: 999px;
+    height: 0.65rem;
+    margin: 0.75rem 0;
+    overflow: hidden;
+}
+
+.pedido-progress-fill {
+    background: #2563eb;
+    border-radius: inherit;
+    height: 100%;
+    transition: width 150ms ease-in-out;
+}
+
 .pedido-status {
     font-weight: 700;
     margin: 0.5rem 0 0;
@@ -53,6 +88,61 @@
 
 .pedido-status[data-state="sem_itens"] {
     color: #4b5563;
+}
+
+.conference-link {
+    display: inline-block;
+    font-weight: 700;
+    margin-top: 0.75rem;
+}
+
+.pedido-item-progress {
+    margin: 1rem 0;
+}
+
+.pedido-item-progress h2 {
+    font-size: 1.1rem;
+}
+
+#pedido-item-progress-list {
+    display: grid;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#pedido-item-progress-list li {
+    align-items: center;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 0.65rem 0.75rem;
+}
+
+#pedido-item-progress-list li div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+#pedido-item-progress-list li div span,
+.pedido-item-quantity {
+    color: #4b5563;
+    font-size: 0.9rem;
+}
+
+.pedido-item-quantity {
+    white-space: nowrap;
+}
+
+.empty-order-guidance {
+    background: #fee2e2;
+    border-radius: 0.5rem;
+    color: #991b1b;
+    padding: 0.75rem;
 }
 
 .scanner-controls {
@@ -79,6 +169,11 @@
 }
 
 #scanner-status[data-state="fora_do_pedido"] {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+#scanner-status[data-state="nao_cadastrado"] {
     background: #fee2e2;
     color: #991b1b;
 }
@@ -110,6 +205,20 @@
 }
 
 .scan-result[data-state="fora_do_pedido"] {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.scan-result[data-state="nao_cadastrado"] {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.scan-result[data-state="erro"] {
     background: #fee2e2;
     border: 1px solid #fca5a5;
     border-radius: 0.5rem;
