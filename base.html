@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}TagControl{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="{% if request.endpoint == 'pedidos.scanner' %}scanner-theme{% else %}management-theme{% endif %}">
+    {% if request.endpoint == "pedidos.scanner" %}
+    <nav>
+        <a href="{{ url_for('pecas.listar') }}">Peças</a> |
+        <a href="{{ url_for('conjuntos.listar') }}">Conjuntos</a> |
+        <a href="{{ url_for('pedidos.listar') }}">Pedidos</a>
+    </nav>
+    {% else %}
+    <header class="site-header">
+        <div class="site-header-inner">
+            <a class="brand" href="{{ url_for('pedidos.listar') }}">TagControl</a>
+            <nav class="main-nav" aria-label="Navegação principal">
+                <a class="nav-link{% if request.blueprint == 'pecas' %} is-active{% endif %}" href="{{ url_for('pecas.listar') }}"{% if request.blueprint == 'pecas' %} aria-current="page"{% endif %}>Peças</a>
+                <a class="nav-link{% if request.blueprint == 'conjuntos' %} is-active{% endif %}" href="{{ url_for('conjuntos.listar') }}"{% if request.blueprint == 'conjuntos' %} aria-current="page"{% endif %}>Conjuntos</a>
+                <a class="nav-link{% if request.blueprint == 'pedidos' %} is-active{% endif %}" href="{{ url_for('pedidos.listar') }}"{% if request.blueprint == 'pedidos' %} aria-current="page"{% endif %}>Pedidos</a>
+            </nav>
+        </div>
+    </header>
+    {% endif %}
+
+    <div class="page-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-list" aria-label="Mensagens">
+                {% for category, message in messages %}
+                    <li class="flash-message flash-{{ category }}"{% if category == "error" %} role="alert"{% else %} role="status"{% endif %}>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
