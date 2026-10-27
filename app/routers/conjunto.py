@@ -2,7 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError
 
 from app import db
-from app.instance.models import Conjunto, ConjuntoPeca, Peca
+from app.instance.models import Conjunto, ConjuntoPeca, PedidoConjunto, Peca
 
 conjuntos_bp = Blueprint("conjuntos", __name__, url_prefix="/conjuntos")
 
@@ -73,6 +73,12 @@ def editar(conjunto_id):
 @conjuntos_bp.route("/apagar/<int:conjunto_id>", methods=["POST"], endpoint="apagar")
 def apagar(conjunto_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
+    if ConjuntoPeca.query.filter_by(subconjunto_id=conjunto.id).first():
+        flash("Não é possível excluir um conjunto utilizado como subconjunto.", "error")
+        return redirect(url_for("conjuntos.listar"))
+    if PedidoConjunto.query.filter_by(conjunto_id=conjunto.id).first():
+        flash("Não é possível excluir um conjunto registrado na composição de um pedido.", "error")
+        return redirect(url_for("conjuntos.listar"))
     db.session.delete(conjunto)
     try:
         db.session.commit()
@@ -88,7 +94,85 @@ def apagar(conjunto_id):
 def detalhe(conjunto_id):
     conjunto = Conjunto.query.get_or_404(conjunto_id)
     pecas_disponiveis = Peca.query.filter(~Peca.id.in_([assoc.peca_id for assoc in conjunto.pecas_assoc])).all()
-    return render_template("conjuntos/detalhe.html", conjunto=conjunto, pecas_disponiveis=pecas_disponiveis)
+    conjuntos_disponiveis = Conjunto.query.filter(Conjunto.id != conjunto.id).order_by(Conjunto.codigo).all()
+    return render_template(
+        "conjuntos/detalhe.html",
+        conjunto=conjunto,
+        pecas_disponiveis=pecas_disponiveis,
+        conjuntos_disponiveis=conjuntos_disponiveis,
+    )
+
+
+def _contains_subconjunto(conjunto_id, target_id, visited=None):
+    visited = visited or set()
+    if conjunto_id == target_id:
+        return True
+    if conjunto_id in visited:
+        return False
+    visited.add(conjunto_id)
+    children = (
+        db.session.query(ConjuntoPeca.subconjunto_id)
+        .filter(
+            ConjuntoPeca.conjunto_id == conjunto_id,
+            ConjuntoPeca.subconjunto_id.isnot(None),
+        )
+        .all()
+    )
+    return any(
+        _contains_subconjunto(child_id, target_id, visited)
+        for (child_id,) in children
+        if child_id is not None
+    )
+
+
+@conjuntos_bp.route(
+    "/<int:conjunto_id>/subconjuntos/adicionar",
+    methods=["POST"],
+    endpoint="adicionar_subconjunto",
+)
+def adicionar_subconjunto(conjunto_id):
+    conjunto = Conjunto.query.get_or_404(conjunto_id)
+    try:
+        subconjunto_id = int(request.form.get("subconjunto_id", ""))
+        quantidade = int(request.form.get("quantidade", "1"))
+    except ValueError:
+        flash("Selecione um subconjunto e informe uma quantidade inteira positiva.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+
+    if quantidade < 1:
+        flash("A quantidade deve ser um número inteiro maior que zero.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+    if subconjunto_id < 1:
+        flash("Selecione um subconjunto válido.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+    if subconjunto_id == conjunto.id or _contains_subconjunto(subconjunto_id, conjunto.id):
+        flash("Essa associação criaria uma composição circular entre conjuntos.", "error")
+        return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
+
+    subconjunto = Conjunto.query.get_or_404(subconjunto_id)
+    assoc = ConjuntoPeca.query.filter_by(
+        conjunto_id=conjunto.id,
+        subconjunto_id=subconjunto.id,
+    ).first()
+    if assoc:
+        assoc.quantidade += quantidade
+    else:
+        db.session.add(
+            ConjuntoPeca(
+                conjunto_id=conjunto.id,
+                subconjunto_id=subconjunto.id,
+                quantidade=quantidade,
+            )
+        )
+
+    try:
+        db.session.commit()
+        flash("Subconjunto adicionado com sucesso!", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash("Não foi possível adicionar esse subconjunto.", "error")
+
+    return redirect(url_for("conjuntos.detalhe", conjunto_id=conjunto.id))
 
 
 @conjuntos_bp.route("/<int:conjunto_id>/pecas/adicionar", methods=["POST"], endpoint="adicionar_peca")
@@ -156,7 +240,7 @@ def remover_peca(conjunto_id, assoc_id):
     db.session.delete(assoc)
     try:
         db.session.commit()
-        flash("Peça removida do conjunto com sucesso!", "success")
+        flash("Componente removido do conjunto com sucesso!", "success")
     except IntegrityError:
         db.session.rollback()
         flash("Erro ao remover peça do conjunto.", "error")

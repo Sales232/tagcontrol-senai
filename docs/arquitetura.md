@@ -28,12 +28,12 @@ Os modelos ficam em `app/instance/models.py`; as rotas de cada domínio ficam em
 | Local | Responsabilidade |
 | --- | --- |
 | `app/__init__.py` | Fábrica Flask, configuração de extensões, registro de blueprints e comando de seed. |
-| `app/instance/models.py` | Entidades, relacionamentos e cálculo de progresso de pedido. |
+| `app/instance/models.py` | Entidades, relacionamentos, expansão recursiva de conjuntos e cálculo de progresso de pedido. |
 | `app/routers/pecas.py` | Páginas e operações de gestão de peças. |
-| `app/routers/conjunto.py` | Páginas e operações de conjuntos e seus itens. |
-| `app/routers/pedidos.py` | Páginas e operações de pedidos, itens, scanner e validação JSON. |
+| `app/routers/conjunto.py` | Páginas e operações de conjuntos, peças/subconjuntos e prevenção de ciclos. |
+| `app/routers/pedidos.py` | Páginas e operações de pedidos, itens, aplicação de composição, scanner, progresso agregado, conferência final e validação JSON. |
 | `app/templates/` | Apresentação HTML renderizada com Jinja2. |
-| `app/static/` | CSS, JavaScript do scanner e biblioteca local de leitura de código de barras. |
+| `app/static/` | CSS, JavaScript do scanner e biblioteca local de leitura de QR Code. |
 | `migrations/` | Configuração e histórico de versões do schema via Alembic. |
 | `tests/test_app.py` | Testes de fábrica, modelos, CRUD, scanner e seed com o cliente de teste Flask. |
 
@@ -45,7 +45,15 @@ O navegador envia `GET` para obter listas, formulários ou detalhes. Operações
 
 ### Leitura do scanner
 
-O JavaScript inicia a câmera usando `html5-qrcode`, decodifica um dos formatos habilitados e envia o código para `POST /pedidos/{pedido_id}/scanner/validar`. A rota encontra a peça, verifica sua presença e quantidade no pedido, grava o resultado aplicável e retorna status e progresso em JSON. O cliente atualiza a interface com a resposta.
+O JavaScript inicia a câmera usando `html5-qrcode`, decodifica QR Codes e envia o conteúdo lido para `POST /pedidos/{pedido_id}/scanner/validar`. Pedidos sem itens não abrem o scanner e a rota também rejeita a validação sem criar leitura. Para os demais pedidos, a rota encontra a peça, verifica sua presença e quantidade, grava o resultado aplicável e retorna status, progresso total e progresso por peça em JSON. O cliente atualiza a interface e oferece acesso à conferência quando as quantidades são concluídas. A listagem resume progresso sem substituir o estágio persistido do fluxo.
+
+### Conferência final
+
+Quando o progresso operacional do pedido atinge 100%, a tela de detalhe oferece um checklist manual por peça. A rota `GET/POST /pedidos/{pedido_id}/conferencia` valida o nome do conferente, as quantidades encontradas e os motivos das divergências, persistindo uma tentativa e snapshots por item. A aprovação muda o fluxo para liberado; a reprovação salva quantidades reconciliadas e marcos das leituras existentes para que apenas novas leituras contem na separação complementar. A reabertura explícita de um pedido liberado inicia nova separação sem apagar eventos históricos.
+
+### Composição de pedidos
+
+Conjuntos podem referenciar peças e subconjuntos. A inclusão valida que a hierarquia não forme ciclos. Antes das leituras e conferências, o operador pode aplicar uma quantidade de conjuntos ao pedido; o modelo expande a árvore, multiplica quantidades por nível e agrega peças repetidas. As quantidades resultantes são somadas aos `PedidoItem` existentes e a origem selecionada é persistida em `PedidoConjunto`, sem dependência de recálculo futuro do catálogo.
 
 ### Migrações e demonstração
 

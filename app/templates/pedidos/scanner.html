@@ -7,12 +7,15 @@
 {% block content %}
 <main class="scanner-page" data-pedido-id="{{ pedido.id }}">
     <h1>Scanner — Pedido {{ pedido.codigo }}</h1>
-    <p>Aponte a câmera para um código de barras de produto (EAN/UPC ou Code 128).</p>
+    <p>Aponte a câmera para o QR Code e mantenha-o dentro do retângulo de leitura. Deixe-o bem iluminado, sem reflexos, e aguarde o foco. Cada leitura aceita conta uma unidade do tipo de peça; a etiqueta não identifica uma unidade física individual.</p>
 
     <div class="pedido-progress" aria-live="polite">
         <strong>Acompanhamento do pedido</strong>
         <div><span id="pedido-progress-value">{{ progresso.quantidade_validada }} / {{ progresso.total_necessario }} itens</span></div>
         <div><span id="pedido-progress-percent">({{ progresso.percentual }}%)</span></div>
+        <div class="pedido-progress-track" role="progressbar" aria-label="Progresso geral da separação" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progresso.percentual }}">
+            <div id="pedido-progress-fill" class="pedido-progress-fill" style="width: {{ progresso.percentual }}%"></div>
+        </div>
         {% if progresso.status == "finalizado" %}
             <p id="pedido-progress-status" class="pedido-status" data-state="finalizado">Separação finalizada</p>
         {% elif progresso.status == "sem_itens" %}
@@ -20,32 +23,65 @@
         {% else %}
             <p id="pedido-progress-status" class="pedido-status" data-state="em_andamento">Separação em andamento</p>
         {% endif %}
+        <a
+            id="conference-link"
+            class="conference-link"
+            href="{{ url_for('pedidos.conferencia', pedido_id=pedido.id) }}"
+            {% if progresso.status != "finalizado" %}hidden{% endif %}
+        >Ir para conferência</a>
     </div>
 
-    <label for="camera-select">Câmera</label>
-    <select id="camera-select" aria-label="Selecionar câmera" disabled>
-        <option value="">Câmera padrão (traseira)</option>
-    </select>
+    <section class="pedido-item-progress" aria-labelledby="pedido-item-progress-title">
+        <h2 id="pedido-item-progress-title">Progresso por peça</h2>
+        <ul id="pedido-item-progress-list" aria-live="polite">
+            {% for item in progresso_por_item %}
+            <li data-peca-id="{{ item.peca.id }}">
+                <div>
+                    <strong>{{ item.peca.codigo }}</strong>
+                    <span>{{ item.peca.descricao }}</span>
+                </div>
+                <span class="pedido-item-quantity">{{ item.quantidade_validada }} / {{ item.quantidade_necessaria }} · {{ item.percentual }}%</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
 
-    <div id="reader" aria-label="Pré-visualização da câmera"></div>
+    <section id="scanner-inputs">
+        <label for="camera-select">Câmera</label>
+        <select id="camera-select" aria-label="Selecionar câmera" disabled>
+            <option value="">Câmera padrão (traseira)</option>
+        </select>
 
-    <div class="scanner-controls">
-        <button id="start-scanner" type="button">Iniciar câmera</button>
-        <button id="stop-scanner" type="button" hidden>Parar câmera</button>
-        <button id="scan-again" type="button" hidden>Ler outro código</button>
-    </div>
+        <div id="reader" aria-label="Pré-visualização da câmera"></div>
+
+        <div class="scanner-controls">
+            <button id="start-scanner" type="button">Iniciar câmera</button>
+            <button id="stop-scanner" type="button" hidden>Parar câmera</button>
+            <button id="scan-again" type="button" hidden>Ler outro QR Code</button>
+            <button id="retry-scan" type="button" hidden>Tentar novamente</button>
+        </div>
+
+        <form id="manual-scan-form" class="manual-scan-form">
+            <label for="manual-scan-code">Ou digite o conteúdo do QR Code</label>
+            <input id="manual-scan-code" type="text" maxlength="50" autocomplete="off" required>
+            <button type="submit">Validar código informado</button>
+        </form>
+    </section>
 
     <p id="scanner-status" role="status" aria-live="polite">
         A câmera ainda não foi iniciada.
     </p>
-
+    <p id="empty-order-guidance" class="empty-order-guidance" hidden>
+        Este pedido não possui itens. <a href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Volte ao pedido para adicionar peças ou aplicar um conjunto.</a>
+    </p>
     <section id="scan-result" class="scan-result" aria-live="polite" hidden>
-        <h2>Código capturado</h2>
+        <h2>QR Code capturado</h2>
         <output id="scanned-code"></output>
     </section>
 
     <p><a href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Voltar ao pedido</a></p>
 </main>
 <script src="{{ url_for('static', filename='vendor/html5-qrcode.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qr-scanner-config.js') }}"></script>
 <script src="{{ url_for('static', filename='js/scanner.js') }}" defer></script>
 {% endblock %}
