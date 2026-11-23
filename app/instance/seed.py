@@ -6,24 +6,20 @@ from app.instance.models import Leitura, Pedido, PedidoItem, Peca, StatusLeitura
 
 DEMO_PECAS = (
     {
-        "codigo": "PEC-001",
+        "codigo": "232323",
         "descricao": "Parafuso M8 x 30",
-        "codigo_qr": "750000000001",
     },
     {
-        "codigo": "PEC-002",
+        "codigo": "232021",
         "descricao": "Porca M8",
-        "codigo_qr": "750000000002",
     },
     {
-        "codigo": "PEC-003",
+        "codigo": "232102",
         "descricao": "Arruela M8",
-        "codigo_qr": "750000000003",
     },
     {
-        "codigo": "PEC-004",
+        "codigo": "210211",
         "descricao": "Terminal elétrico",
-        "codigo_qr": "750000000004",
     },
 )
 
@@ -44,14 +40,14 @@ DEMO_PEDIDOS = (
 )
 
 
-def _get_or_create_peca(codigo: str, descricao: str, codigo_qr: str) -> Peca:
+def _get_or_create_peca(codigo: str, descricao: str) -> Peca:
     peca = Peca.query.filter_by(codigo=codigo).first()
     if peca is None:
-        peca = Peca(codigo=codigo, descricao=descricao, codigo_qr=codigo_qr)
+        peca = Peca(codigo=codigo, descricao=descricao)
         db.session.add(peca)
+        db.session.flush()
     else:
         peca.descricao = descricao
-        peca.codigo_qr = codigo_qr
     return peca
 
 
@@ -60,6 +56,7 @@ def _get_or_create_pedido(codigo: str) -> Pedido:
     if pedido is None:
         pedido = Pedido(codigo=codigo)
         db.session.add(pedido)
+        db.session.flush()
     return pedido
 
 
@@ -72,6 +69,7 @@ def _get_or_create_item(pedido: Pedido, peca: Peca, quantidade_necessaria: int) 
             quantidade_necessaria=quantidade_necessaria,
         )
         db.session.add(item)
+        db.session.flush()
     else:
         item.quantidade_necessaria = quantidade_necessaria
     return item
@@ -79,14 +77,12 @@ def _get_or_create_item(pedido: Pedido, peca: Peca, quantidade_necessaria: int) 
 
 def seed_demo_data() -> dict[str, object]:
     """Create a reusable demo dataset for the MVP and keep it idempotent."""
-    db.create_all()
 
     pecas: dict[str, Peca] = {}
     for dados in DEMO_PECAS:
         peca = _get_or_create_peca(
             codigo=dados["codigo"],
             descricao=dados["descricao"],
-            codigo_qr=dados["codigo_qr"],
         )
         pecas[dados["codigo"]] = peca
 
