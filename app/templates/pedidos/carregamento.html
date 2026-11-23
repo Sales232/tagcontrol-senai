@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Carregamento — Pedido {{ pedido.codigo }} | TagControl{% endblock %}
+{% block content %}
+<section class="page-heading detail-heading">
+    <div>
+        <p class="eyebrow">Expedição / Carregamento</p>
+        <h1>Carregamento do pedido {{ pedido.codigo }}</h1>
+        <p>Confirme cada volume da embalagem do ciclo {{ embalagem.ciclo }}. Os horários serão registrados em UTC.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Voltar ao pedido</a>
+</section>
+
+<section class="panel progress-panel">
+    {% if expedicao %}
+    <p>Veículo: <strong>{{ expedicao.placa_veiculo }}</strong> · Motorista/transportadora: <strong>{{ expedicao.motorista_transportadora }}</strong></p>
+    {% else %}
+    <p>Informe o veículo no primeiro volume carregado. Os dados serão mantidos para a expedição deste ciclo.</p>
+    {% endif %}
+    <strong>{{ volumes_carregados|length }} / {{ embalagem.volumes|length }} volumes carregados</strong>
+</section>
+
+<section class="packing-volume-list" aria-label="Volumes da embalagem">
+    {% for volume in embalagem.volumes %}
+    <article class="panel packing-volume">
+        {% set form_volume_id = volume.id|string %}
+        {% set carregar_values = form_values if form_values.get("_acao") == "carregar" and form_values.get("_volume_id") == form_volume_id else {} %}
+        {% set reverter_values = form_values if form_values.get("_acao") == "reverter" and form_values.get("_volume_id") == form_volume_id else {} %}
+        <div class="section-heading">
+            <h2>Volume {{ volume.numero }}</h2>
+            {% if volume.id in volumes_carregados %}
+            <span class="status-label" data-state="finalizado">Carregado</span>
+            {% else %}
+            <span class="status-label" data-state="em_andamento">Pendente</span>
+            {% endif %}
+        </div>
+        <ul class="item-progress-list">
+            {% for item in volume.itens %}
+            <li><strong>{{ item.codigo_peca }} — {{ item.descricao_peca }}</strong><span class="item-progress-value">{{ item.quantidade }} unidade(s)</span></li>
+            {% endfor %}
+        </ul>
+
+        {% if pedido.status_fluxo != "expedido" and volume.id in volumes_carregados %}
+        <form class="inline-form" method="post" action="{{ url_for('pedidos.reverter_carregamento', pedido_id=pedido.id, volume_id=volume.id) }}">
+            <label class="form-field">
+                <span>Responsável pela reversão</span>
+                <input type="text" name="responsavel" maxlength="100" value="{{ reverter_values.get('responsavel', '') }}" required>
+            </label>
+            <label class="form-field">
+                <span>Observação (opcional)</span>
+                <input type="text" name="observacao" maxlength="500" value="{{ reverter_values.get('observacao', '') }}">
+            </label>
+            <button class="button button-secondary" type="submit">Reverter carregamento</button>
+        </form>
+        {% elif pedido.status_fluxo != "expedido" %}
+        <form class="inline-form" method="post" action="{{ url_for('pedidos.carregar_volume', pedido_id=pedido.id, volume_id=volume.id) }}">
+            {% if not expedicao %}
+            <label class="form-field">
+                <span>Placa do veículo</span>
+                <input type="text" name="placa_veiculo" maxlength="20" value="{{ carregar_values.get('placa_veiculo', '') }}" required>
+            </label>
+            <label class="form-field">
+                <span>Motorista/transportadora</span>
+                <input type="text" name="motorista_transportadora" maxlength="120" value="{{ carregar_values.get('motorista_transportadora', '') }}" required>
+            </label>
+            {% endif %}
+            <label class="form-field">
+                <span>Responsável pelo carregamento</span>
+                <input type="text" name="responsavel" maxlength="100" value="{{ carregar_values.get('responsavel', '') }}" required>
+            </label>
+            <label class="form-field">
+                <span>Observação (opcional)</span>
+                <input type="text" name="observacao" maxlength="500" value="{{ carregar_values.get('observacao', '') }}">
+            </label>
+            <button type="submit">Marcar volume como carregado</button>
+        </form>
+        {% endif %}
+    </article>
+    {% endfor %}
+</section>
+
+{% if pedido.status_fluxo == "carregado" %}
+<section class="panel conference-notice">
+    <strong>Todos os volumes foram carregados</strong>
+    <p>Registre a saída separadamente. Depois desta confirmação, o pedido não poderá ser reaberto.</p>
+    {% set saida_values = form_values if form_values.get("_acao") == "saida" else {} %}
+    <form class="stacked-form" method="post" action="{{ url_for('pedidos.expedir', pedido_id=pedido.id) }}">
+        <label class="form-field">
+            <span>Responsável pela saída</span>
+            <input type="text" name="responsavel" maxlength="100" value="{{ saida_values.get('responsavel', '') }}" required>
+        </label>
+        <label class="form-field">
+            <span>Observação (opcional)</span>
+            <textarea name="observacao" maxlength="500" rows="2">{{ saida_values.get('observacao', '') }}</textarea>
+        </label>
+        <button type="submit">Registrar saída do pedido</button>
+    </form>
+</section>
+{% elif expedicao and expedicao.saida %}
+<section class="panel conference-notice">
+    <strong>Saída registrada</strong>
+    <p>{{ expedicao.saida.timestamp.strftime("%d/%m/%Y %H:%M:%S") }} UTC · Responsável: {{ expedicao.saida.responsavel }}</p>
+    {% if expedicao.saida.observacao %}<p>{{ expedicao.saida.observacao }}</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

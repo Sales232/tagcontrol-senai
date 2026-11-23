@@ -1,16 +1,16 @@
 .management-theme {
-    --color-bg: #f5f7fa;
+    --color-bg: #f3f7f3;
     --color-surface: #ffffff;
-    --color-text: #19232e;
-    --color-muted: #697586;
-    --color-border: #dce3ea;
-    --color-primary: #176b59;
-    --color-primary-hover: #105444;
+    --color-text: #183229;
+    --color-muted: #61736b;
+    --color-border: #d8e4dc;
+    --color-primary: #28734e;
+    --color-primary-hover: #1d5e3d;
     --color-danger: #b42318;
     --color-danger-bg: #fff1f0;
     --color-success: #176b46;
     --color-success-bg: #eaf7ef;
-    --color-focus: #8ab7ff;
+    --color-focus: #75ad88;
     background: var(--color-bg);
     color: var(--color-text);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -79,7 +79,7 @@
 
 .management-theme .nav-link:hover,
 .management-theme .nav-link.is-active {
-    background: #edf5f2;
+    background: #eaf3ec;
     color: var(--color-primary);
     text-decoration: none;
 }
@@ -159,8 +159,8 @@
 }
 
 .management-theme .button-secondary:hover {
-    background: #f1f4f7;
-    border-color: #c4ced8;
+    background: #f2f6f2;
+    border-color: #bfcec2;
     color: var(--color-text);
 }
 
@@ -209,7 +209,7 @@
 }
 
 .management-theme .data-table th {
-    background: #f8fafb;
+    background: #f4f8f4;
     color: var(--color-muted);
     font-size: 0.75rem;
     font-weight: 700;
@@ -222,7 +222,7 @@
 }
 
 .management-theme .data-table tbody tr:hover:not(.empty-row) {
-    background: #fbfcfd;
+    background: #f8fbf8;
 }
 
 .management-theme .table-actions,
@@ -417,6 +417,76 @@
     color: var(--color-primary);
 }
 
+.management-theme .home-welcome {
+    background: #e8f2e9;
+    border: 1px solid #d5e6d7;
+    border-radius: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.management-theme .home-welcome h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    letter-spacing: -0.05em;
+    line-height: 1.15;
+    margin: 0;
+}
+
+.management-theme .home-welcome > p:not(.eyebrow) {
+    color: var(--color-muted);
+    margin: 0.65rem 0 1.25rem;
+    max-width: 42rem;
+}
+
+.management-theme .home-actions,
+.management-theme .home-summary,
+.management-theme .home-shortcuts {
+    display: grid;
+    gap: 1rem;
+}
+
+.management-theme .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.management-theme .home-summary {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.management-theme .home-summary-card {
+    color: var(--color-text);
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.1rem 1.25rem;
+}
+
+.management-theme .home-summary-card:hover,
+.management-theme .home-shortcut:hover {
+    border-color: #a9c7af;
+    text-decoration: none;
+}
+
+.management-theme .home-summary-card .summary-value {
+    color: var(--color-primary);
+}
+
+.management-theme .home-shortcuts {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.management-theme .home-shortcut {
+    color: var(--color-text);
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
+}
+
+.management-theme .home-shortcut span {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
 .management-theme .item-progress-list {
     display: grid;
     gap: 0.65rem;
@@ -440,6 +510,70 @@
     color: var(--color-muted);
     font-size: 0.9rem;
     white-space: nowrap;
+}
+
+.management-theme .order-history-list {
+    display: grid;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.management-theme .order-history-event {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 0.3rem solid var(--color-primary);
+    border-radius: 0.55rem;
+    padding: 0.9rem 1rem;
+}
+
+.management-theme .order-history-heading,
+.management-theme .order-history-meta {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+}
+
+.management-theme .order-history-heading time,
+.management-theme .order-history-meta,
+.management-theme .order-history-event p {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+.management-theme .order-history-meta {
+    justify-content: flex-start;
+    margin: 0.55rem 0;
+}
+
+.management-theme .history-cycle {
+    background: #eef2ff;
+    border-radius: 999px;
+    color: #3730a3;
+    padding: 0.15rem 0.55rem;
+}
+
+.management-theme .history-cycle-current {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.management-theme .history-cycle-legacy {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.management-theme .order-history-piece {
+    color: var(--color-text);
+}
+
+.management-theme .order-history-reason {
+    border-left: 2px solid var(--color-border);
+    margin: 0.4rem 0;
+    padding-left: 0.65rem;
 }
 
 .management-theme .add-item-panel {
@@ -488,6 +622,31 @@
     margin: 0;
 }
 
+.management-theme .packing-form {
+    display: grid;
+    gap: 1rem;
+    max-width: 48rem;
+}
+
+.management-theme .packing-volume-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.management-theme .packing-volume,
+.management-theme .packing-volume-form {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 1.25rem;
+}
+
+.management-theme .packing-volume h3,
+.management-theme .packing-volume-form legend {
+    margin: 0;
+    padding: 0 0.35rem;
+}
+
 .management-theme textarea {
     background: #fff;
     border: 1px solid #cbd5df;
@@ -511,10 +670,15 @@
         margin: 0 -0.35rem;
         max-width: 100%;
         overflow-x: auto;
+        width: 100%;
     }
 
     .management-theme .page-container {
         padding: 1.5rem 1rem 3rem;
+    }
+
+    .management-theme .home-actions > .button {
+        width: 100%;
     }
 
     .management-theme .page-heading {
@@ -538,6 +702,11 @@
     }
 
     .management-theme .conference-item {
+        padding: 1rem;
+    }
+
+    .management-theme .packing-volume,
+    .management-theme .packing-volume-form {
         padding: 1rem;
     }
 }

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Etiqueta {{ peca.codigo }} | TagControl{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/etiqueta.css') }}">
+{% endblock %}
+{% block content %}
+<section class="page-heading label-page-heading">
+    <div>
+        <p class="eyebrow">Catálogo / Peças</p>
+        <h1>Etiqueta da peça</h1>
+        <p>O QR Code contém o código interno <strong>{{ peca.codigo }}</strong>.</p>
+    </div>
+</section>
+
+<section class="piece-label" aria-label="Etiqueta imprimível da peça">
+    <div class="piece-label-copy">
+        <strong class="piece-label-code">{{ peca.codigo }}</strong>
+        <span>{{ peca.descricao }}</span>
+    </div>
+    <img
+        class="piece-label-qr"
+        src="{{ url_for('pecas.qr_svg', peca_id=peca.id) }}"
+        alt="QR Code da peça {{ peca.codigo }}"
+    >
+</section>
+
+<div class="form-actions label-actions">
+    <button type="button" onclick="window.print()">Imprimir etiqueta</button>
+    <a class="button button-secondary" href="{{ url_for('pecas.listar') }}">Voltar às peças</a>
+</div>
+{% endblock %}

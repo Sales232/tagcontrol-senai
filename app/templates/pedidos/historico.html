@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Histórico — Pedido {{ pedido.codigo }} | TagControl{% endblock %}
+{% block content %}
+<section class="page-heading detail-heading">
+    <div>
+        <p class="eyebrow">Expedição / Pedidos</p>
+        <h1>Histórico do pedido {{ pedido.codigo }}</h1>
+        <p>Eventos de separação, conferência e reabertura em ordem cronológica. Os horários são exibidos em UTC.</p>
+    </div>
+    <div class="table-actions">
+        <a class="button button-secondary" href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Voltar ao pedido</a>
+    </div>
+</section>
+
+<section class="detail-section" aria-label="Linha do tempo do pedido">
+    <div class="section-heading">
+        <h2>Linha do tempo</h2>
+        <span class="muted">Ciclo atual: {{ ciclo_atual }}</span>
+    </div>
+    <ol class="order-history-list">
+        {% for evento in eventos %}
+        <li class="order-history-event" data-event-type="{{ evento.tipo|lower }}">
+            <div class="order-history-heading">
+                <strong>{{ evento.evento }}</strong>
+                <time datetime="{{ evento.timestamp.isoformat() }}Z">{{ evento.timestamp.strftime("%d/%m/%Y %H:%M:%S") }} UTC</time>
+            </div>
+            <p class="order-history-meta">
+                {% if evento.ciclo is none %}
+                <span class="history-cycle history-cycle-legacy">Histórico legado — ciclo não identificado</span>
+                {% elif evento.ciclo == ciclo_atual %}
+                <span class="history-cycle history-cycle-current">Ciclo atual · {{ evento.ciclo }}</span>
+                {% else %}
+                <span class="history-cycle">Ciclo anterior · {{ evento.ciclo }}</span>
+                {% endif %}
+                <span>{{ evento.tipo }}</span>
+                <span>Resultado: {{ evento.resultado }}</span>
+            </p>
+            {% if evento.codigo_peca %}
+            <p class="order-history-piece">
+                <strong>{{ evento.codigo_peca }}</strong> — {{ evento.descricao_peca }}
+            </p>
+            {% endif %}
+            {% if evento.responsavel or evento.conferente %}
+            <p>{{ "Conferente" if evento.tipo in ["Conferência", "Divergência"] else "Responsável" }}: <strong>{{ evento.responsavel or evento.conferente }}</strong></p>
+            {% endif %}
+            {% if evento.veiculo %}
+            <p>Veículo: <strong>{{ evento.veiculo }}</strong> · Motorista/transportadora: <strong>{{ evento.motorista }}</strong></p>
+            {% endif %}
+            {% if evento.motivo %}
+            <p class="order-history-reason">{{ "Observação/conteúdo" if evento.tipo == "Embalagem" else ("Observação" if evento.tipo in ["Carregamento", "Saída"] else "Motivo") }}: {{ evento.motivo }}</p>
+            {% endif %}
+        </li>
+        {% else %}
+        <li class="panel empty-state">Ainda não há eventos registrados para este pedido.</li>
+        {% endfor %}
+    </ol>
+    <p class="muted">Registros anteriores à implantação do histórico podem não ter ciclo conhecido. O sistema não atribui esses eventos a um ciclo por suposição.</p>
+</section>
+{% endblock %}

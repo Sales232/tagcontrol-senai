@@ -6,6 +6,7 @@
     const retryButton = document.getElementById("retry-scan");
     const manualForm = document.getElementById("manual-scan-form");
     const manualCode = document.getElementById("manual-scan-code");
+    const scanResponsible = document.getElementById("scan-responsible");
     const status = document.getElementById("scanner-status");
     const result = document.getElementById("scan-result");
     const scannedCode = document.getElementById("scanned-code");
@@ -22,7 +23,7 @@
     const pedidoId = document.querySelector("main[data-pedido-id]")?.dataset.pedidoId;
 
     if (!cameraSelect || !startButton || !stopButton || !scanAgainButton ||
-        !retryButton || !manualForm || !manualCode || !status || !result ||
+        !retryButton || !manualForm || !manualCode || !scanResponsible || !status || !result ||
         !scannedCode || !readerElement || !pedidoItemProgressList ||
         !scannerInputs || !emptyOrderGuidance || !pedidoId) {
         return;
@@ -173,6 +174,11 @@
         if (validationInFlight) {
             return;
         }
+        if (!scanResponsible.value.trim()) {
+            setStatus("Informe o responsável por esta leitura antes de continuar.", "erro");
+            scanResponsible.focus();
+            return;
+        }
         validationInFlight = true;
         scannedCode.textContent = code;
         result.hidden = false;
@@ -186,7 +192,11 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ codigo: code, idempotency_key: idempotencyKey }),
+                body: JSON.stringify({
+                    codigo: code,
+                    idempotency_key: idempotencyKey,
+                    responsavel: scanResponsible.value.trim(),
+                }),
             });
 
             let payload;

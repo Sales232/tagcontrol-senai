@@ -32,6 +32,10 @@
                     </td>
                     <td>
                         {% if pedido.status_fluxo == "liberado" %}Liberado para expedição
+                        {% elif pedido.status_fluxo == "embalado" %}Embalado · aguardando carregamento
+                        {% elif pedido.status_fluxo == "carregando" %}Carregamento em andamento
+                        {% elif pedido.status_fluxo == "carregado" %}Carregado · aguardando saída
+                        {% elif pedido.status_fluxo == "expedido" %}Expedido
                         {% elif pedido.status_fluxo == "correcao" %}Em correção
                         {% elif pedido.status_fluxo == "aguardando_conferencia" %}Aguardando conferência
                         {% else %}Em separação{% endif %}
@@ -39,7 +43,9 @@
                     <td>
                         <div class="table-actions">
                             <a class="text-link" href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Gerenciar itens</a>
+                            {% if pedido.status_fluxo not in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}
                             <a class="text-link" href="{{ url_for('pedidos.editar', pedido_id=pedido.id) }}">Editar</a>
+                            {% endif %}
                             <form method="post" action="{{ url_for('pedidos.apagar', pedido_id=pedido.id) }}" onsubmit="return confirm('Apagar pedido {{ pedido.codigo }}?');">
                                 <button class="button-danger" type="submit">Apagar</button>
                             </form>

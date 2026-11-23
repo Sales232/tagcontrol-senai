@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Embalagem — Pedido {{ pedido.codigo }} | TagControl{% endblock %}
+{% block content %}
+<section class="page-heading detail-heading">
+    <div>
+        <p class="eyebrow">Expedição / Embalagem</p>
+        <h1>Embalar pedido {{ pedido.codigo }}</h1>
+        <p>Distribua todas as quantidades conferidas entre um ou mais volumes. Os horários serão registrados em UTC.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Voltar ao pedido</a>
+</section>
+
+<section class="panel progress-panel">
+    <strong>Conteúdo que deve ser embalado</strong>
+    <ul class="item-progress-list">
+        {% for item in pedido.itens %}
+        <li><strong>{{ item.peca.codigo }} — {{ item.peca.descricao }}</strong><span class="item-progress-value">{{ item.quantidade_necessaria }} unidade(s)</span></li>
+        {% endfor %}
+    </ul>
+</section>
+
+<form method="post" class="stacked-form packing-form">
+    <label class="form-field">
+        <span>Responsável pela embalagem</span>
+        <input type="text" name="responsavel" value="{{ responsavel }}" maxlength="100" required>
+    </label>
+    <label class="form-field">
+        <span>Observação (opcional)</span>
+        <textarea name="observacao" maxlength="500" rows="3">{{ observacao }}</textarea>
+    </label>
+
+    <div class="section-heading">
+        <h2>Volumes</h2>
+        <button class="button button-secondary" type="button" id="add-volume">Adicionar volume</button>
+    </div>
+    <div id="packing-volumes" class="packing-volume-list">
+        {% for volume in volumes %}
+        <fieldset class="panel packing-volume-form" data-volume-card>
+            <legend>Volume {{ loop.index }}</legend>
+            <input type="hidden" name="volume_id" value="{{ volume.id }}">
+            <button class="button button-secondary" type="button" data-remove-volume>Remover volume</button>
+            {% for item in pedido.itens %}
+            <label class="form-field">
+                <span>{{ item.peca.codigo }} — {{ item.peca.descricao }}</span>
+                <input type="number" name="volume_{{ volume.id }}_item_{{ item.id }}" value="{{ volume.quantidades[item.id] }}" min="0" step="1" required>
+            </label>
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
+    </div>
+
+    <template id="packing-volume-template">
+        <fieldset class="panel packing-volume-form" data-volume-card>
+            <legend>Volume</legend>
+            <input type="hidden" name="volume_id" value="__INDEX__">
+            <button class="button button-secondary" type="button" data-remove-volume>Remover volume</button>
+            {% for item in pedido.itens %}
+            <label class="form-field">
+                <span>{{ item.peca.codigo }} — {{ item.peca.descricao }}</span>
+                <input type="number" name="volume___INDEX___item_{{ item.id }}" value="0" min="0" step="1" required>
+            </label>
+            {% endfor %}
+        </fieldset>
+    </template>
+
+    <div class="form-actions">
+        <button type="submit">Registrar embalagem</button>
+        <a class="button button-secondary" href="{{ url_for('pedidos.detalhe', pedido_id=pedido.id) }}">Cancelar</a>
+    </div>
+</form>
+<script src="{{ url_for('static', filename='js/embalagem.js') }}" defer></script>
+{% endblock %}

@@ -9,7 +9,7 @@
     <h1>Scanner — Pedido {{ pedido.codigo }}</h1>
     <p>Aponte a câmera para o QR Code e mantenha-o dentro do retângulo de leitura. Deixe-o bem iluminado, sem reflexos, e aguarde o foco. Cada leitura aceita conta uma unidade do tipo de peça; a etiqueta não identifica uma unidade física individual.</p>
 
-    <div class="pedido-progress" aria-live="polite">
+    <div class="pedido-progress scanner-card" aria-live="polite">
         <strong>Acompanhamento do pedido</strong>
         <div><span id="pedido-progress-value">{{ progresso.quantidade_validada }} / {{ progresso.total_necessario }} itens</span></div>
         <div><span id="pedido-progress-percent">({{ progresso.percentual }}%)</span></div>
@@ -31,7 +31,7 @@
         >Ir para conferência</a>
     </div>
 
-    <section class="pedido-item-progress" aria-labelledby="pedido-item-progress-title">
+    <section class="pedido-item-progress scanner-card" aria-labelledby="pedido-item-progress-title">
         <h2 id="pedido-item-progress-title">Progresso por peça</h2>
         <ul id="pedido-item-progress-list" aria-live="polite">
             {% for item in progresso_por_item %}
@@ -46,7 +46,7 @@
         </ul>
     </section>
 
-    <section id="scanner-inputs">
+    <section id="scanner-inputs" class="scanner-card">
         <label for="camera-select">Câmera</label>
         <select id="camera-select" aria-label="Selecionar câmera" disabled>
             <option value="">Câmera padrão (traseira)</option>
@@ -62,6 +62,8 @@
         </div>
 
         <form id="manual-scan-form" class="manual-scan-form">
+            <label for="scan-responsible">Responsável por esta leitura</label>
+            <input id="scan-responsible" type="text" maxlength="100" autocomplete="name" required>
             <label for="manual-scan-code">Ou digite o conteúdo do QR Code</label>
             <input id="manual-scan-code" type="text" maxlength="50" autocomplete="off" required>
             <button type="submit">Validar código informado</button>

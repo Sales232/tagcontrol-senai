@@ -10,8 +10,15 @@
         <p class="eyebrow">Expedição / Pedidos</p>
         <h1>Pedido {{ pedido.codigo }}</h1>
         <p>Acompanhe a separação e gerencie os itens necessários.</p>
+        {% if pedido.prazo_entrega %}
+        <p>Prazo de entrega: <strong>{{ pedido.prazo_entrega.strftime("%d/%m/%Y") }}</strong></p>
+        {% endif %}
         <p class="status-label" data-state="{{ pedido.status_fluxo }}">
             {% if pedido.status_fluxo == "liberado" %}Liberado para expedição
+            {% elif pedido.status_fluxo == "embalado" %}Embalado · aguardando carregamento
+            {% elif pedido.status_fluxo == "carregando" %}Carregamento em andamento
+            {% elif pedido.status_fluxo == "carregado" %}Carregado · aguardando saída
+            {% elif pedido.status_fluxo == "expedido" %}Expedido
             {% elif pedido.status_fluxo == "correcao" %}Em correção
             {% elif pedido.status_fluxo == "aguardando_conferencia" %}Aguardando conferência
             {% else %}Em separação{% endif %}
@@ -19,7 +26,8 @@
     </div>
     <div class="table-actions">
         <a class="button button-secondary" href="{{ url_for('pedidos.listar') }}">Voltar aos pedidos</a>
-        {% if pedido.status_fluxo != "liberado" %}
+        <a class="button button-secondary" href="{{ url_for('pedidos.historico', pedido_id=pedido.id) }}">Histórico do pedido</a>
+        {% if pedido.status_fluxo not in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}
         <a class="button" href="{{ url_for('pedidos.scanner', pedido_id=pedido.id) }}">Abrir scanner</a>
         {% endif %}
     </div>
@@ -28,10 +36,38 @@
 {% if pedido.status_fluxo == "liberado" %}
 <section class="panel conference-notice">
     <strong>Pedido liberado para expedição</strong>
-    <p>Para alterar os itens ou iniciar uma nova separação, reabra o pedido. Será necessária uma nova conferência.</p>
+    <p>Registre os volumes e os itens que serão preparados para transporte ou reabra o pedido.</p>
+    <a class="button" href="{{ url_for('pedidos.embalagem', pedido_id=pedido.id) }}">Registrar embalagem</a>
     <form method="post" action="{{ url_for('pedidos.reabrir', pedido_id=pedido.id) }}" onsubmit="return confirm('Reabrir o pedido e exigir nova separação e conferência?');">
+        <label class="form-field"><span>Responsável pela reabertura</span><input name="responsavel" maxlength="100" required></label>
         <button class="button button-secondary" type="submit">Reabrir pedido</button>
     </form>
+</section>
+{% elif pedido.status_fluxo == "embalado" %}
+<section class="panel conference-notice">
+    <strong>Pedido embalado</strong>
+    <p>A embalagem foi registrada. Confirme o carregamento de cada volume ou reabra o pedido para iniciar um novo ciclo.</p>
+    <a class="button" href="{{ url_for('pedidos.carregamento', pedido_id=pedido.id) }}">Abrir carregamento</a>
+    <form method="post" action="{{ url_for('pedidos.reabrir', pedido_id=pedido.id) }}" onsubmit="return confirm('Reabrir o pedido e exigir nova separação, conferência e embalagem?');">
+        <label class="form-field"><span>Responsável pela reabertura</span><input name="responsavel" maxlength="100" required></label>
+        <button class="button button-secondary" type="submit">Reabrir pedido</button>
+    </form>
+</section>
+{% elif pedido.status_fluxo in ["carregando", "carregado"] %}
+<section class="panel conference-notice">
+    <strong>{% if pedido.status_fluxo == "carregado" %}Todos os volumes carregados{% else %}Carregamento em andamento{% endif %}</strong>
+    <p>Consulte o carregamento, confirme a saída quando todos os volumes estiverem carregados ou reabra o pedido antes da saída.</p>
+    <a class="button" href="{{ url_for('pedidos.carregamento', pedido_id=pedido.id) }}">Consultar carregamento</a>
+    <form method="post" action="{{ url_for('pedidos.reabrir', pedido_id=pedido.id) }}" onsubmit="return confirm('Reabrir o pedido? O histórico do carregamento atual será preservado no ciclo anterior.');">
+        <label class="form-field"><span>Responsável pela reabertura</span><input name="responsavel" maxlength="100" required></label>
+        <button class="button button-secondary" type="submit">Reabrir pedido</button>
+    </form>
+</section>
+{% elif pedido.status_fluxo == "expedido" %}
+<section class="panel conference-notice">
+    <strong>Pedido expedido</strong>
+    <p>A saída foi registrada. O pedido está encerrado e não pode ser reaberto neste MVP.</p>
+    <a class="button button-secondary" href="{{ url_for('pedidos.carregamento', pedido_id=pedido.id) }}">Consultar expedição</a>
 </section>
 {% elif pedido.status_fluxo in ["aguardando_conferencia", "correcao"] and progresso.status == "finalizado" %}
 <section class="panel conference-notice">
@@ -49,6 +85,42 @@
     <strong>Pedido retornou para correção</strong>
     <p>As quantidades físicas reconciliadas são consideradas no progresso. Faça a separação complementar até completar o pedido; depois, será necessária uma nova conferência.</p>
     <a class="button" href="{{ url_for('pedidos.scanner', pedido_id=pedido.id) }}">Continuar separação</a>
+</section>
+{% endif %}
+
+{% if embalagem_atual %}
+<section class="detail-section">
+    <div class="section-heading">
+        <h2>Embalagem do ciclo {{ embalagem_atual.ciclo }}</h2>
+        <span class="muted">{{ embalagem_atual.timestamp.strftime("%d/%m/%Y %H:%M:%S") }} UTC · {{ embalagem_atual.responsavel }}</span>
+    </div>
+    {% if embalagem_atual.observacao %}<p class="muted">{{ embalagem_atual.observacao }}</p>{% endif %}
+    <div class="packing-volume-list">
+        {% for volume in embalagem_atual.volumes %}
+        <section class="panel packing-volume">
+            <h3>Volume {{ volume.numero }}</h3>
+            <ul class="item-progress-list">
+                {% for item in volume.itens %}
+                <li><strong>{{ item.codigo_peca }} — {{ item.descricao_peca }}</strong><span class="item-progress-value">{{ item.quantidade }} unidade(s)</span></li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if expedicao_atual and expedicao_atual.saida %}
+<section class="detail-section">
+    <div class="section-heading">
+        <h2>Saída da expedição</h2>
+        <span class="muted">{{ expedicao_atual.saida.timestamp.strftime("%d/%m/%Y %H:%M:%S") }} UTC</span>
+    </div>
+    <div class="panel conference-notice">
+        <p>Veículo: <strong>{{ expedicao_atual.placa_veiculo }}</strong> · Motorista/transportadora: <strong>{{ expedicao_atual.motorista_transportadora }}</strong></p>
+        <p>Responsável pela saída: <strong>{{ expedicao_atual.saida.responsavel }}</strong></p>
+        {% if expedicao_atual.saida.observacao %}<p>{{ expedicao_atual.saida.observacao }}</p>{% endif %}
+    </div>
 </section>
 {% endif %}
 
@@ -148,13 +220,16 @@
                         <td>
                             <form class="inline-form" method="post" action="{{ url_for('pedidos.editar_item', pedido_id=pedido.id, item_id=item.id) }}">
                                 <label class="field-label" for="quantidade-{{ item.id }}">Quantidade necessária</label>
-                                <input id="quantidade-{{ item.id }}" type="number" name="quantidade_necessaria" value="{{ item.quantidade_necessaria }}" min="1" aria-label="Quantidade necessária de {{ item.peca.codigo }}" {% if pedido.status_fluxo == "liberado" %}disabled{% endif %}>
-                                {% if pedido.status_fluxo != "liberado" %}<button type="submit">Atualizar</button>{% endif %}
+                                <input id="quantidade-{{ item.id }}" type="number" name="quantidade_necessaria" value="{{ item.quantidade_necessaria }}" min="1" aria-label="Quantidade necessária de {{ item.peca.codigo }}" {% if pedido.status_fluxo in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}disabled{% endif %}>
+                                {% if pedido.status_fluxo not in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}<label class="field-label" for="responsavel-editar-{{ item.id }}">Responsável</label><input id="responsavel-editar-{{ item.id }}" name="responsavel" maxlength="100" required>{% endif %}
+                                {% if pedido.status_fluxo not in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}<button type="submit">Atualizar</button>{% endif %}
                             </form>
                         </td>
                         <td>
-                            {% if pedido.status_fluxo != "liberado" %}
+                            {% if pedido.status_fluxo not in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}
                                 <form method="post" action="{{ url_for('pedidos.remover_item', pedido_id=pedido.id, item_id=item.id) }}" onsubmit="return confirm('Remover esse item do pedido?');">
+                                    <label class="field-label" for="responsavel-remover-{{ item.id }}">Responsável</label>
+                                    <input id="responsavel-remover-{{ item.id }}" name="responsavel" maxlength="100" required>
                                     <button class="button-danger" type="submit">Remover</button>
                                 </form>
                             {% else %}<span class="muted">Reabra para editar</span>{% endif %}
@@ -173,7 +248,7 @@
     <div class="section-heading">
         <h2>Adicionar item ao pedido</h2>
     </div>
-    {% if pedido.status_fluxo == "liberado" %}
+    {% if pedido.status_fluxo in ["liberado", "embalado", "carregando", "carregado", "expedido"] %}
     <p class="panel empty-state">Reabra o pedido para alterar seus itens.</p>
     {% elif pecas_disponiveis %}
     <div class="panel add-item-panel">
@@ -189,6 +264,10 @@
             <label class="form-field">
                 <span>Quantidade necessária</span>
                 <input type="number" name="quantidade_necessaria" min="1" value="1" required>
+            </label>
+            <label class="form-field">
+                <span>Responsável</span>
+                <input type="text" name="responsavel" maxlength="100" required>
             </label>
             <button type="submit">Adicionar item</button>
         </form>

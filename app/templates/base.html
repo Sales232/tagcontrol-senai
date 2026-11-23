@@ -7,25 +7,20 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     {% block head %}{% endblock %}
 </head>
-<body class="{% if request.endpoint == 'pedidos.scanner' %}scanner-theme{% else %}management-theme{% endif %}">
-    {% if request.endpoint == "pedidos.scanner" %}
-    <nav>
-        <a href="{{ url_for('pecas.listar') }}">Peças</a> |
-        <a href="{{ url_for('conjuntos.listar') }}">Conjuntos</a> |
-        <a href="{{ url_for('pedidos.listar') }}">Pedidos</a>
-    </nav>
-    {% else %}
+<body class="management-theme{% if request.endpoint == 'pedidos.scanner' %} scanner-theme{% endif %}">
     <header class="site-header">
         <div class="site-header-inner">
-            <a class="brand" href="{{ url_for('pedidos.listar') }}">TagControl</a>
+            <a class="brand" href="{{ url_for('home.index') }}">TagControl</a>
             <nav class="main-nav" aria-label="Navegação principal">
+                <a class="nav-link{% if request.blueprint == 'home' %} is-active{% endif %}" href="{{ url_for('home.index') }}"{% if request.blueprint == 'home' %} aria-current="page"{% endif %}>Início</a>
                 <a class="nav-link{% if request.blueprint == 'pecas' %} is-active{% endif %}" href="{{ url_for('pecas.listar') }}"{% if request.blueprint == 'pecas' %} aria-current="page"{% endif %}>Peças</a>
                 <a class="nav-link{% if request.blueprint == 'conjuntos' %} is-active{% endif %}" href="{{ url_for('conjuntos.listar') }}"{% if request.blueprint == 'conjuntos' %} aria-current="page"{% endif %}>Conjuntos</a>
                 <a class="nav-link{% if request.blueprint == 'pedidos' %} is-active{% endif %}" href="{{ url_for('pedidos.listar') }}"{% if request.blueprint == 'pedidos' %} aria-current="page"{% endif %}>Pedidos</a>
+                <a class="nav-link{% if request.blueprint == 'indicadores' %} is-active{% endif %}" href="{{ url_for('indicadores.index') }}"{% if request.blueprint == 'indicadores' %} aria-current="page"{% endif %}>Indicadores</a>
+                <a class="nav-link{% if request.blueprint == 'dados' %} is-active{% endif %}" href="{{ url_for('dados.index') }}"{% if request.blueprint == 'dados' %} aria-current="page"{% endif %}>Dados</a>
             </nav>
         </div>
     </header>
-    {% endif %}
 
     <div class="page-container">
         {% with messages = get_flashed_messages(with_categories=true) %}

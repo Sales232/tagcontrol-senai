@@ -5,7 +5,7 @@
     <div>
         <p class="eyebrow">Expedição / Pedidos</p>
         <h1>{{ "Editar pedido" if pedido else "Novo pedido" }}</h1>
-        <p>Defina o código para identificar este pedido.</p>
+        <p>Defina o código e, se aplicável, o prazo de entrega.</p>
     </div>
 </section>
 
@@ -14,6 +14,10 @@
         <label class="form-field">
             <span>Código</span>
             <input type="text" name="codigo" value="{{ pedido.codigo if pedido else '' }}" required maxlength="50">
+        </label>
+        <label class="form-field">
+            <span>Prazo de entrega (opcional)</span>
+            <input type="date" name="prazo_entrega" value="{{ prazo_entrega if prazo_entrega is defined else (pedido.prazo_entrega.isoformat() if pedido and pedido.prazo_entrega else '') }}">
         </label>
         <div class="form-actions">
             <button type="submit">Salvar pedido</button>

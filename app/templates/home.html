@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Início | TagControl{% endblock %}
+{% block content %}
+<section class="home-welcome">
+    <p class="eyebrow">Gestão de materiais</p>
+    <h1>Bem-vindo ao TagControl</h1>
+    <p>Cadastre materiais, acompanhe pedidos e gerencie cada etapa da operação.</p>
+    <div class="home-actions">
+        <a class="button" href="{{ url_for('pedidos.novo') }}">Criar pedido</a>
+        <a class="button button-secondary" href="{{ url_for('pedidos.listar') }}">Acompanhar pedidos</a>
+    </div>
+</section>
+
+<section class="home-summary" aria-label="Resumo do cadastro">
+    <a class="panel home-summary-card" href="{{ url_for('pecas.listar') }}">
+        <span class="summary-label">Peças cadastradas</span>
+        <strong class="summary-value">{{ piece_count }}</strong>
+        <span class="text-link">Ver peças</span>
+    </a>
+    <a class="panel home-summary-card" href="{{ url_for('conjuntos.listar') }}">
+        <span class="summary-label">Conjuntos cadastrados</span>
+        <strong class="summary-value">{{ set_count }}</strong>
+        <span class="text-link">Ver conjuntos</span>
+    </a>
+    <a class="panel home-summary-card" href="{{ url_for('pedidos.listar') }}">
+        <span class="summary-label">Pedidos</span>
+        <strong class="summary-value">{{ order_count }}</strong>
+        <span class="text-link">{{ active_order_count }} em andamento · abrir lista</span>
+    </a>
+</section>
+
+<section class="detail-section">
+    <div class="section-heading"><h2>Acesso rápido</h2></div>
+    <div class="home-shortcuts">
+        <a class="panel home-shortcut" href="{{ url_for('pecas.novo') }}">
+            <strong>Cadastrar peça</strong>
+            <span>Adicionar material e identificar seu QR Code.</span>
+        </a>
+        <a class="panel home-shortcut" href="{{ url_for('conjuntos.novo') }}">
+            <strong>Criar conjunto</strong>
+            <span>Organizar peças e subconjuntos em uma composição.</span>
+        </a>
+        <a class="panel home-shortcut" href="{{ url_for('indicadores.index') }}">
+            <strong>Ver indicadores</strong>
+            <span>Consultar o resumo agregado do fluxo e do armazém.</span>
+        </a>
+        <a class="panel home-shortcut" href="{{ url_for('dados.index') }}">
+            <strong>Importar ou exportar dados</strong>
+            <span>Gerenciar uma cópia CSV dos registros.</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

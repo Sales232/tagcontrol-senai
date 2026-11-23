@@ -224,3 +224,178 @@
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
 }
+
+.scanner-page {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+}
+
+.scanner-card,
+.piece-scanner {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d8e4dc);
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.scanner-page label,
+.piece-scanner > label {
+    color: var(--color-text, #183229);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.scanner-page input,
+.scanner-page select,
+.piece-scanner select,
+.manual-scan-form input {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d8e4dc);
+    border-radius: 0.45rem;
+    color: var(--color-text, #183229);
+    width: 100%;
+}
+
+.scanner-page input:focus,
+.scanner-page select:focus,
+.piece-scanner select:focus {
+    border-color: var(--color-primary, #28734e);
+    outline: 3px solid rgb(40 115 78 / 15%);
+}
+
+.scanner-controls button,
+.piece-scanner-controls button {
+    background: var(--color-primary, #28734e);
+    border: 1px solid var(--color-primary, #28734e);
+    border-radius: 0.45rem;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 650;
+    min-height: 2.7rem;
+    padding: 0.55rem 0.85rem;
+}
+
+.scanner-controls button:hover,
+.piece-scanner-controls button:hover {
+    background: var(--color-primary-hover, #1d5e3d);
+    border-color: var(--color-primary-hover, #1d5e3d);
+}
+
+.pedido-progress {
+    background: #eef5ef;
+    border: 1px solid var(--color-border, #d8e4dc);
+}
+
+.pedido-progress-track {
+    background: #d7e4d9;
+}
+
+.pedido-progress-fill {
+    background: var(--color-primary, #28734e);
+}
+
+.pedido-status[data-state="em_andamento"] {
+    color: var(--color-primary, #28734e);
+}
+
+.pedido-item-progress {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #d8e4dc);
+    border-radius: 0.65rem;
+    padding: 1rem;
+}
+
+#pedido-item-progress-list li {
+    background: #f7faf7;
+    border-color: var(--color-border, #d8e4dc);
+}
+
+.pedido-item-quantity,
+#pedido-item-progress-list li div span {
+    color: var(--color-muted, #61736b);
+}
+
+#reader,
+#piece-reader {
+    margin: 0 auto;
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+}
+
+#reader video,
+#piece-reader video {
+    max-width: 100%;
+}
+
+#scanner-status,
+#piece-scanner-status {
+    background: #f1f5f1;
+    border: 1px solid var(--color-border, #d8e4dc);
+    border-radius: 0.5rem;
+    min-height: 3rem;
+    padding: 0.75rem;
+}
+
+#scanner-status[data-state="sucesso"],
+#piece-scanner-status[data-state="sucesso"] {
+    background: #e7f4e9;
+    color: #245c37;
+}
+
+#scanner-status[data-state="duplicada"] {
+    background: #fff6dc;
+    color: #76520d;
+}
+
+#scanner-status[data-state="fora_do_pedido"],
+#scanner-status[data-state="nao_cadastrado"],
+#scanner-status[data-state="erro"],
+#piece-scanner-status[data-state="erro"] {
+    background: #fff0ef;
+    color: #9b3028;
+}
+
+.scan-result[data-state="sucesso"],
+#piece-scan-result {
+    background: #e7f4e9;
+    border-color: #b6d8bc;
+}
+
+.scan-result[data-state="duplicada"] {
+    background: #fff6dc;
+    border-color: #ead696;
+}
+
+.scan-result[data-state="fora_do_pedido"],
+.scan-result[data-state="nao_cadastrado"],
+.scan-result[data-state="erro"] {
+    background: #fff0ef;
+    border-color: #e8c1bd;
+}
+
+.scanner-theme .page-container {
+    padding-top: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .scanner-card,
+    .piece-scanner,
+    .pedido-progress,
+    .pedido-item-progress {
+        padding: 0.85rem;
+    }
+
+    .scanner-controls button,
+    .piece-scanner-controls button {
+        flex: 1 1 9rem;
+    }
+
+    #pedido-item-progress-list li {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}

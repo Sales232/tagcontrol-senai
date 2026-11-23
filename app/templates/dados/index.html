@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Importação e exportação | TagControl{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Administração / Dados</p>
+        <h1>Importação e exportação</h1>
+        <p>Exporte o cadastro e o histórico operacional ou importe um arquivo CSV TagControl versão 1.</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <h2>Exportar dados</h2>
+    <p>O arquivo inclui peças, conjuntos, pedidos e os registros operacionais relacionados, preservando ciclos e snapshots.</p>
+    <a class="button" href="{{ url_for('dados.exportar') }}">Baixar CSV completo</a>
+</section>
+
+<section class="panel form-panel">
+    <h2>Importar dados</h2>
+    <p>A importação é somente inserção. Códigos já existentes ou qualquer linha inválida rejeitam o lote inteiro; registros existentes não são sobrescritos.</p>
+    <form method="post" action="{{ url_for('dados.importar') }}" enctype="multipart/form-data" class="stacked-form">
+        <label class="form-field">
+            <span>Arquivo CSV (máximo {{ max_upload_mb }} MB)</span>
+            <input type="file" name="arquivo" accept=".csv,text/csv" required>
+        </label>
+        <button type="submit">Validar e importar</button>
+    </form>
+</section>
+{% endblock %}

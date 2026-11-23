@@ -1,12 +1,14 @@
 (() => {
     const supportedFormats = [Html5QrcodeSupportedFormats.QR_CODE];
 
-    const chooseCamera = (cameraSelect, cameras) => {
+    // Preenche o select com as câmeras disponíveis.
+    // Retorna o id da câmera apenas se o usuário já havia escolhido uma antes;
+    // caso contrário retorna null, para que o facingMode "environment" decida.
+    const chooseCamera = (cameraSelect, cameras, previousCameraId) => {
         if (!cameras.length) {
             throw new DOMException("Nenhuma câmera encontrada.", "NotFoundError");
         }
 
-        const previousCameraId = cameraSelect.value;
         cameraSelect.replaceChildren();
         cameras.forEach((camera, index) => {
             const option = document.createElement("option");
@@ -15,13 +17,11 @@
             cameraSelect.append(option);
         });
 
-        if (cameras.some((camera) => camera.id === previousCameraId)) {
+        if (previousCameraId && cameras.some((camera) => camera.id === previousCameraId)) {
             cameraSelect.value = previousCameraId;
-        } else {
-            const rearCamera = cameras.find((camera) => /back|rear|environment|traseir/i.test(camera.label));
-            cameraSelect.value = rearCamera ? rearCamera.id : cameras[0].id;
+            return previousCameraId;
         }
-        return cameraSelect.value;
+        return null;
     };
 
     const getScanRegion = (viewfinderWidth, viewfinderHeight) => {
@@ -54,6 +54,46 @@
         return "Não foi possível iniciar a câmera. Verifique as permissões e tente novamente.";
     };
 
+    const start = async (scanner, cameraSelect, onDecoded, onDecodeFailure) => {
+        const cameras = await Html5Qrcode.getCameras();
+        const previousCameraId = cameraSelect.value;
+        const chosenCameraId = chooseCamera(cameraSelect, cameras, previousCameraId);
+
+        // Escolha da câmera: id específico (menu) ou traseira (padrão).
+        const cameraConstraint = chosenCameraId
+            ? { deviceId: { exact: chosenCameraId } }
+            : { facingMode: { ideal: "environment" } };
+
+        const config = {
+            fps: 10,
+            qrbox: getScanRegion,
+            // IMPORTANTE: a biblioteca usa este objeto no lugar do 1º argumento
+            // do start(), então a câmera precisa estar aqui dentro.
+            videoConstraints: {
+                ...cameraConstraint,
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+            },
+        };
+
+        await scanner.start(cameraConstraint, config, onDecoded, onDecodeFailure);
+
+        // Sincroniza o select com a câmera que realmente abriu.
+        const runningId = scanner.getRunningTrackSettings().deviceId;
+        if (runningId && [...cameraSelect.options].some((option) => option.value === runningId)) {
+            cameraSelect.value = runningId;
+        }
+        return cameraSelect.value;
+    };
+
+    // Use quando o usuário trocar a câmera no menu suspenso.
+    const switchCamera = async (scanner, cameraSelect, onDecoded, onDecodeFailure) => {
+        if (scanner.isScanning) {
+            await scanner.stop();
+        }
+        return start(scanner, cameraSelect, onDecoded, onDecodeFailure);
+    };
+
     window.TagControlQrScanner = Object.freeze({
         getCameraErrorMessage,
 
@@ -61,26 +101,7 @@
             formatsToSupport: supportedFormats,
         }),
 
-        start: async (scanner, cameraSelect, onDecoded, onDecodeFailure) => {
-            const cameraId = chooseCamera(cameraSelect, await Html5Qrcode.getCameras());
-            await scanner.start(
-                cameraId,
-                {
-                    fps: 10,
-                    qrbox: getScanRegion,
-                    videoConstraints: {
-                        audio: false,
-                        video: {
-                            deviceId: { exact: cameraId },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                        },
-                    },
-                },
-                onDecoded,
-                onDecodeFailure,
-            );
-            return cameraId;
-        },
+        start,
+        switchCamera,
     });
 })();

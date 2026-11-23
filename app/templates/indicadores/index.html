@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Indicadores | TagControl{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Operação</p>
+        <h1>Indicadores</h1>
+        <p>Resumo agregado do fluxo e da operação de armazenagem. Os nomes de responsáveis não são exibidos.</p>
+    </div>
+</section>
+
+<section class="panel form-panel">
+    <form method="get" class="inline-form">
+        <label class="form-field">
+            <span>Início</span>
+            <input type="date" name="inicio" value="{{ start_date }}" required>
+        </label>
+        <label class="form-field">
+            <span>Fim</span>
+            <input type="date" name="fim" value="{{ end_date }}" required>
+        </label>
+        <label class="form-field">
+            <span>Estado atual</span>
+            <select name="estado">
+                <option value="">Todos os estados</option>
+                {% for value, label in statuses.items() %}
+                <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Aplicar filtros</button>
+    </form>
+</section>
+
+<section class="detail-section" aria-label="Indicadores agregados">
+    <div class="section-heading"><h2>Fluxo</h2></div>
+    <div class="panel">
+        <p><strong>{{ indicators.order_count }}</strong> pedido(s) criado(s) no período e compatível(is) com o filtro de estado.</p>
+        <p>Pedidos vencidos ainda não expedidos: <strong>{{ indicators.overdue_order_count }}</strong></p>
+        <p>Pedidos expedidos no prazo: <strong>{{ indicators.completed_on_time_count }}</strong></p>
+        <p>Pedidos expedidos após o prazo: <strong>{{ indicators.completed_late_count }}</strong></p>
+        <p>Duração média dos ciclos completos: <strong>{{ indicators.average_cycle_minutes if indicators.average_cycle_minutes is not none else "Sem dados mensuráveis" }}</strong>{% if indicators.average_cycle_minutes is not none %} minuto(s) · {{ indicators.measured_cycle_count }} ciclo(s){% endif %}</p>
+        <p>Transições registradas no período: <strong>{{ indicators.state_transition_count }}</strong></p>
+    </div>
+</section>
+
+<section class="detail-section" aria-label="Indicadores do armazém">
+    <div class="section-heading"><h2>Armazém</h2></div>
+    <div class="panel">
+        <p>Leituras: <strong>{{ indicators.reading_counts.sucesso }}</strong> válidas,
+            <strong>{{ indicators.reading_counts.duplicada }}</strong> duplicadas e
+            <strong>{{ indicators.reading_counts.fora_do_pedido }}</strong> fora do pedido.</p>
+        <p>Conferências: <strong>{{ indicators.conference_count }}</strong> · divergências em
+            <strong>{{ indicators.divergent_item_count }}</strong> de {{ indicators.conference_item_count }} linha(s)
+            {% if indicators.conference_divergence_rate is none %}(sem dados){% else %}({{ indicators.conference_divergence_rate }}%){% endif %}</p>
+        <p>Embalagem: <strong>{{ indicators.packaged_volume_count }}</strong> volume(s),
+            <strong>{{ indicators.packaged_quantity }}</strong> unidade(s) registradas.</p>
+        <p>Eventos de carregamento no período: <strong>{{ indicators.loaded_volume_event_count }}</strong> carregamento(s),
+            <strong>{{ indicators.reverted_volume_event_count }}</strong> reversão(ões).
+            Volumes atualmente carregados: <strong>{{ indicators.currently_loaded_volume_count }}</strong>.</p>
+    </div>
+</section>
+
+<p class="muted">Pedidos legados sem data de criação são excluídos do filtro de período ({{ indicators.legacy_order_count }} encontrado(s)). Duração e pontualidade só consideram ciclos com eventos registrados; o sistema não infere eventos anteriores.</p>
+{% endblock %}

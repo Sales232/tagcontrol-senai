@@ -5,7 +5,7 @@
     <div>
         <p class="eyebrow">Catálogo</p>
         <h1>Peças</h1>
-        <p>Gerencie as peças e seus QR Codes.</p>
+        <p>Gerencie as peças e gere etiquetas com QR Code a partir do código interno.</p>
     </div>
     <a class="button" href="{{ url_for('pecas.novo') }}">Nova peça</a>
 </section>
@@ -14,16 +14,16 @@
     <div class="table-scroll">
         <table class="data-table">
             <thead>
-                <tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col">QR Code</th><th scope="col">Ações</th></tr>
+                <tr><th scope="col">Código interno / QR Code</th><th scope="col">Descrição</th><th scope="col">Ações</th></tr>
             </thead>
             <tbody>
             {% for peca in pecas %}
                 <tr>
                     <td><strong>{{ peca.codigo }}</strong></td>
                     <td>{{ peca.descricao }}</td>
-                    <td>{{ peca.codigo_qr }}</td>
                     <td>
                         <div class="table-actions">
+                            <a class="text-link" href="{{ url_for('pecas.etiqueta', peca_id=peca.id) }}">Imprimir etiqueta</a>
                             <a class="text-link" href="{{ url_for('pecas.editar', peca_id=peca.id) }}">Editar</a>
                             <form method="post" action="{{ url_for('pecas.apagar', peca_id=peca.id) }}" onsubmit="return confirm('Apagar peça {{ peca.codigo }}?');">
                                 <button class="button-danger" type="submit">Apagar</button>
@@ -32,7 +32,7 @@
                     </td>
                 </tr>
             {% else %}
-                <tr class="empty-row"><td class="empty-state" colspan="4">Nenhuma peça cadastrada.</td></tr>
+                <tr class="empty-row"><td class="empty-state" colspan="3">Nenhuma peça cadastrada.</td></tr>
             {% endfor %}
             </tbody>
         </table>

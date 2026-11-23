@@ -1,0 +1,103 @@
+.piece-label {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #183229;
+    border-radius: 0.25rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) 6rem;
+    max-width: 28rem;
+    min-height: 7rem;
+    padding: 0.6rem;
+}
+
+.piece-label-qr {
+    display: block;
+    height: 6rem;
+    width: 6rem;
+}
+
+.piece-label-copy {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.piece-label-code {
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+}
+
+.piece-label-copy span {
+    overflow-wrap: anywhere;
+}
+
+.label-actions {
+    margin-top: 1rem;
+}
+
+@media screen and (max-width: 30rem) {
+    .piece-label {
+        gap: 0.5rem;
+        grid-template-columns: minmax(0, 1fr) 5rem;
+        min-height: 6rem;
+        padding: 0.5rem;
+    }
+
+    .piece-label-qr {
+        height: 5rem;
+        width: 5rem;
+    }
+
+    .piece-label-code {
+        font-size: 1rem;
+    }
+}
+
+@media print {
+    @page {
+        margin: 4mm;
+        size: 80mm 50mm;
+    }
+
+    .site-header,
+    .label-page-heading,
+    .label-actions,
+    .flash-list {
+        display: none !important;
+    }
+
+    .management-theme {
+        background: #fff;
+    }
+
+    .management-theme .page-container {
+        margin: 0;
+        max-width: none;
+        padding: 0;
+    }
+
+    .piece-label {
+        border: 1px solid #000;
+        border-radius: 0;
+        gap: 2mm;
+        grid-template-columns: minmax(0, 1fr) 36mm;
+        max-width: none;
+        min-height: 42mm;
+        padding: 2mm;
+        width: 72mm;
+    }
+    .piece-label-qr {
+    .piece-label-qr {
+        height: 36mm;
+        width: 36mm;
+    }
+
+    .piece-label-code {
+        font-size: 12pt;
+    }
+
+    .piece-label-copy span {
+        font-size: 9pt;
+    }
+}
