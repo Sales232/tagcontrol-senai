@@ -18,7 +18,6 @@ class Peca(db.Model):
     id: db.Mapped[int] = db.mapped_column(primary_key=True)
     codigo: db.Mapped[str] = db.mapped_column(db.String(50), unique=True, index=True)
     descricao: db.Mapped[str] = db.mapped_column(db.String(200))
-    codigo_qr: db.Mapped[str] = db.mapped_column(db.String(50), unique=True, index=True)
 
     conjuntos_assoc: db.Mapped[list["ConjuntoPeca"]] = db.relationship(
         back_populates="peca",
